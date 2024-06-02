@@ -28,6 +28,7 @@ def block(document_, blocking) :
         add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
         add_block.click()
         time.sleep(0.5)
+        blocked.append(blocking)
 def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~~~과 같이 들어갈 것을 지정해줌
     if "하늘위키" not in name :
         if "틀" not in name :
@@ -62,12 +63,12 @@ time.sleep(2.5)  # 페이지가 완전히 로딩되도록 2.5초 동안 기다�
 
 # 아이디 입력
 username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[1]/input')
-username.send_keys('')#여기에 아이디를 넣어주세요.
+username.send_keys('') #여기에 자신의 아이디 입력하기
 time.sleep(1)
 
 # 비밀번호 입력
 password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[2]/input')
-password.send_keys('')#여기에 비밀번호를 넣어주세요.
+password.send_keys('') #여기에 자신의 비밀번호 입력하기
 time.sleep(1)
 
 # 로그인 버튼 클릭
