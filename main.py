@@ -18,11 +18,17 @@ def block(document_, blocking) :
         option2.send_keys(blocking) #차단할 사용자 이름 입력
         time.sleep(0.7)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
-        option3.send_keys("%s r0 긴급차단 | 자동 차단 (차단이 잘못된 경우 하늘위키:차단 소명 게시판에 토론 발제 바람)" % block_memo(document_)) #차단 사유(메모) 지정
-        time.sleep(2)
+        option3.send_keys("%s r0 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 이 계정을 차단 바랍니다.)" % block_memo(document_))
+        time.sleep(0.5)
+        option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/div[3]/select') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
+        dropdown2 = Select(option4)
+        dropdown2.select_by_value("86400")
+        time.sleep(0.5)
         add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
         add_block.click()
-        time.sleep(2)
+        time.sleep(0.5)
+        blocked.append(blocking)
+  
 def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~~~과 같이 들어갈 것을 지정해줌
     if "하늘위키" not in name :
         if "틀" not in name :
@@ -38,10 +44,9 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
         move_document = driver.find_element(By.XPATH,'//*[@id="titleInput"]') #문서 이동 시 사용할 휴지통 문서명
         move_document.send_keys('휴지통:%s' % trashname())
         move_document_memo = driver.find_element(By.XPATH,'//*[@id="logInput"]')
-        move_document_memo.send_keys("반달 복구: 반달을 멈추시고 민트위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 이 계정을 차단 바랍니다.)")
+        move_document_memo.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 이 계정을 차단 바랍니다.)")
         move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
         move_button.click()
-
 def trashname() :
     a = random.randrange(1000000000, 9999999999)
     return(a)
@@ -58,12 +63,12 @@ time.sleep(2.5)  # 페이지가 완전히 로딩되도록 2.5초 동안 기다�
 
 # 아이디 입력
 username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[1]/input')
-username.send_keys('') #여기에 자신의 아이디
+username.send_keys('') #여기에 자신의 아이디 입력하기
 time.sleep(1)
 
 # 비밀번호 입력
 password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[2]/input')
-password.send_keys('') #여기에 자신의 비밀번호
+password.send_keys('') #여기에 자신의 비밀번호 입력하기
 time.sleep(1)
 
 # 로그인 버튼 클릭
@@ -97,6 +102,7 @@ while True :
     edited_document = []
     edited_user = []
 
+    vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot","Fuck_","사퇴 기원","sibal_","No_"]
     vandalism = ["사퇴하세요", "뒤져라","Fuck_","사퇴 기원"] #반달 문서 키워드를 여기에 추가
 
     for index, value in enumerate(document_names):
