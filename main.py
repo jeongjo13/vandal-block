@@ -5,8 +5,10 @@ from selenium.webdriver.common.keys import Keys
 import time
 from bs4 import BeautifulSoup as bs
 from selenium.webdriver.support.ui import Select
-import datetime
+from datetime import datetime
 import random
+
+now = datetime.now()
 
 def block(document_, blocking, rev) :
     if blocking not in blocked :
@@ -74,8 +76,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             print(f"Error in trash function: {e}")
 
 def trashname() :
-    a = random.randrange(10000000000, 99999999999)
-    return(a)
+    return("%s%s%s%s%s%s" % (now.year, now.month, now.day, now.hour, now.minute, now.second))
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = ["Vanilla","jeongjo13","Cordelia","soupcake27"]
 
@@ -100,6 +101,8 @@ time.sleep(0.5)
 login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/button')
 login_button.click()
 time.sleep(1)
+
+document_names = []
 while True :
     # RecentChanges 페이지로 이동
     driver.get('https://haneul.wiki/RecentChanges?logtype=create')
@@ -115,7 +118,6 @@ while True :
     links = soup.find_all('a', href=True)
 
     # 문서명 추출
-    document_names = []
     for link in links:
         href = link.get('href')
         if href.startswith('/w/') and link.text.strip():
@@ -158,7 +160,7 @@ while True :
     links = soup.find_all('a', href=True)
 
     # 문서명 추출
-    document_names = []
+    document_names.clear()
     for link in links:
         href = link.get('href')
         if href.startswith('/w/') and link.text.strip():
