@@ -11,24 +11,19 @@ import random
 def block(document_, blocking) :
     if blocking not in blocked :
         driver.get('https://haneul.wiki/aclgroup?group=차단된 사용자')
-        time.sleep(0.7)
         option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown1 = Select(option1)
         dropdown1.select_by_value("username")
-        time.sleep(0.2)
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
-        time.sleep(0.2)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
         option3.send_keys("%s r0 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 이 계정을 차단 바랍니다.)" % block_memo(document_))
-        time.sleep(0.2)
         option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/div[3]/select') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown2 = Select(option4)
         dropdown2.select_by_value("0")
-        time.sleep(0.2)
+        time.sleep(0.05)
         add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
         add_block.click()
-        time.sleep(0.2)
         blocked.append(blocking)
 def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~~~과 같이 들어갈 것을 지정해줌
     if "하늘위키" not in name :
@@ -61,7 +56,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             print(f"Error in trash function: {e}")
 
 def trashname() :
-    a = random.randrange(10000000, 99999999)
+    a = random.randrange(100000000, 999999999)
     return(a)
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = ["Vanilla","jeongjo13","Cordelia","soupcake27"]
@@ -80,7 +75,7 @@ time.sleep(1)
 
 # 비밀번호 입력
 password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[2]/input')
-password.send_keys(!')
+password.send_keys('')
 time.sleep(1)
 
 # 로그인 버튼 클릭
@@ -114,7 +109,7 @@ while True :
     edited_document = []
     edited_user = []
 
-    vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot","Fuck_","사퇴 기원","sibal_","No_"]
+    vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot","Fuck_","사퇴 기원","sibal_","No_","FUCK_","satoehaseyo","must resign"]
 
     for index, value in enumerate(document_names):
         if index % 2 == 0:
@@ -129,4 +124,9 @@ while True :
         if any(v in i for v in vandalism):
             block(i, j)
             trash(i)
-    time.sleep(0.7)
+    driver.get('https://haneul.wiki/discuss/%EC%82%AC%EC%9A%A9%EC%9E%90%3Ajeongjo13%2F%EA%B8%B4%EA%B8%89%20%EC%A0%95%EC%A7%80')
+    try:
+        element = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/div[4]/div/div')
+        break
+    except NoSuchElementException:
+        time.sleep(0.05)
