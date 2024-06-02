@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup as bs
 from selenium.webdriver.support.ui import Select
 
 def block(document_, blocking) :
-    if blocking not in blocked :
+    if blocking not in blocked : #이미 차단된 경우와 차단 예외 설정 사용자 제외
         driver.get('https://haneul.wiki/aclgroup?group=차단된 사용자') #ACLGroup 창으로 이동
         time.sleep(2)
         option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
@@ -96,4 +96,4 @@ while True :
     for i,j in zip(edited_document,edited_user) :
         if any(v in i for v in vandalism): #문서명이 위의 vandalism 리스트에 해당된다면
             block(i, j) #차단 함수 실행
-    time.sleep(10)
+    time.sleep(10) # 10초 대기
