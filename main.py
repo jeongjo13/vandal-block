@@ -1,5 +1,5 @@
 from selenium import webdriver
-from selenium.common import TimeoutException
+from selenium.common import TimeoutException, NoSuchElementException, ElementClickInterceptedException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import time
@@ -57,8 +57,8 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             move_document_memo.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 이 계정을 차단 바랍니다.)")
             move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
             move_button.click()
-        except TimeoutException :
-            print("문서 삭제 및 휴지통화 실패")
+        except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+            print(f"Error in trash function: {e}")
 
 def trashname() :
     a = random.randrange(10000000, 99999999)
@@ -80,7 +80,7 @@ time.sleep(1)
 
 # 비밀번호 입력
 password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[2]/input')
-password.send_keys('')
+password.send_keys(!')
 time.sleep(1)
 
 # 로그인 버튼 클릭
