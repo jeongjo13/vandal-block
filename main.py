@@ -129,7 +129,7 @@ while True :
     edited_document = []
     edited_user = []
 
-    vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot","Fuck_","사퇴 기원","sibal_","No_","FUCK_","satoehaseyo","must resign","해웃돈","혁명본부 만세","wikiRevolution","wikirevolution"]
+    vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot","Fuck_","사퇴 기원","sibal_","No_","FUCK_","satoehaseyo","must resign","해웃돈","혁명본부 만세","wikiRevolution","wikirevolution", "사퇴를 촉구"]
 
     for index, value in enumerate(document_names):
         if index % 2 == 0:
