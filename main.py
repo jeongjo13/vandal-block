@@ -43,6 +43,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
         move_document_memo.send_keys("반달 복구: 반달을 멈추시고 민트위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 이 계정을 차단 바랍니다.)")
         move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
         move_button.click()
+
 def trashname() :
     a = random.randrange(1000000000, 9999999999)
     return(a)
