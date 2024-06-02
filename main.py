@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import Select
 import datetime
 import random
 
-def block(document_, blocking) :
+def block(document_, blocking, rev) :
     if blocking not in blocked :
         driver.get('https://haneul.wiki/aclgroup?group=차단된 사용자')
         option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
@@ -17,7 +17,7 @@ def block(document_, blocking) :
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
-        option3.send_keys("%s r0 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)" % block_memo(document_))
+        option3.send_keys("%s r%d 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)" % (block_memo(document_), rev))
         option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/div[3]/select') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown2 = Select(option4)
         dropdown2.select_by_value("0")
@@ -74,7 +74,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             print(f"Error in trash function: {e}")
 
 def trashname() :
-    a = random.randrange(1000000000, 9999999999)
+    a = random.randrange(10000000000, 99999999999)
     return(a)
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = ["Vanilla","jeongjo13","Cordelia","soupcake27"]
@@ -140,7 +140,7 @@ while True :
 
     for i,j in zip(edited_document,edited_user) :
         if any(v in i for v in vandalism):
-            block(i, j)
+            block(i, j, 1)
             trash(i)
 
     #문서 변경사항 검토
@@ -172,19 +172,22 @@ while True :
         lastest_version = int(lastest_version)
         if lastest_version > 1 :
             driver.get("https://haneul.wiki/raw/%s?rev=%d" % (i, lastest_version))
+            time.sleep(0.2)
             lastest_doc = get_doc_text()
             driver.get("https://haneul.wiki/raw/%s?rev=%d" % (i, lastest_version-1))
+            time.sleep(0.2)
             prev_doc = get_doc_text()
             for k in vandalism :
                 if k in lastest_doc :
                     if k not in prev_doc :
-                        block(i, j)
+                        block(i, j, lastest_version)
                         revert(i, lastest_version)
                         break
         num += 1;
         if num >= 11 :
             num = 0
             break
+        time.sleep(0.1)
 
 
 
