@@ -46,7 +46,7 @@ def revert(doc, rev) :
     try :
         time.sleep(0.5)
         revert_reason = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/input')
-        revert_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.")
+        revert_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 되돌리기 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.")
         revert_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div/button')
         revert_button.click()
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
@@ -163,7 +163,7 @@ while True :
         href = link.get('href')
         if href.startswith('/w/') and link.text.strip():
             document_names.append(link.text.strip())
-
+    num = 0
     for i,j in zip(edited_document,edited_user) :
         driver.get('https://haneul.wiki/history/%s' % i)
         version = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/ul/li[1]/strong[1]')
@@ -181,6 +181,10 @@ while True :
                         block(i, j)
                         revert(i, lastest_version)
                         break
+        num += 1;
+        if num >= 11 :
+            num = 0
+            break
 
 
 
