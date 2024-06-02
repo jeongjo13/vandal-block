@@ -89,12 +89,12 @@ time.sleep(2.5)  # 페이지가 완전히 로딩되도록 2.5초 동안 기다�
 # 아이디 입력
 username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[1]/input')
 username.send_keys('')
-time.sleep(1)
+time.sleep(0.5)
 
 # 비밀번호 입력
 password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[2]/input')
 password.send_keys('')
-time.sleep(1)
+time.sleep(0.5)
 
 # 로그인 버튼 클릭
 login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/button')
@@ -127,7 +127,7 @@ while True :
     edited_document = []
     edited_user = []
 
-    vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot","Fuck_","사퇴 기원","sibal_","No_","FUCK_","satoehaseyo","must resign","해웃돈","혁명본부 만세"]
+    vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot","Fuck_","사퇴 기원","sibal_","No_","FUCK_","satoehaseyo","must resign","해웃돈","혁명본부 만세","wikiRevolution","wikirevolution"]
 
     for index, value in enumerate(document_names):
         if index % 2 == 0:
