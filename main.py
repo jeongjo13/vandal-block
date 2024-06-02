@@ -48,7 +48,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
         move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
         move_button.click()
 def trashname() :
-    a = random.randrange(1000000000, 9999999999)
+    a = random.randrange(10000000, 99999999)
     return(a)
 
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
