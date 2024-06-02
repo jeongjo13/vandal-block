@@ -145,7 +145,7 @@ while True :
             block(i, j, 1)
             trash(i)
 
-    #문서 변경사항 검토
+    # 문서 변경사항 검토
     # RecentChanges 페이지로 이동
     driver.get('https://haneul.wiki/RecentChanges')
     time.sleep(0.4)
