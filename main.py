@@ -166,16 +166,17 @@ while True :
     num = 0
     for i,j in zip(edited_document,edited_user) :
         driver.get('https://haneul.wiki/history/%s' % i)
+        time.sleep(0.5)
         version = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/ul/li[1]/strong[1]')
         lastest_version = version.text  #해당 문서의 최신 리비전
         lastest_version = lastest_version[1:]
         lastest_version = int(lastest_version)
         if lastest_version > 1 :
             driver.get("https://haneul.wiki/raw/%s?rev=%d" % (i, lastest_version))
-            time.sleep(0.2)
+            time.sleep(0.5)
             lastest_doc = get_doc_text()
             driver.get("https://haneul.wiki/raw/%s?rev=%d" % (i, lastest_version-1))
-            time.sleep(0.2)
+            time.sleep(0.5)
             prev_doc = get_doc_text()
             for k in vandalism :
                 if k in lastest_doc :
