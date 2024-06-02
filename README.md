@@ -2,4 +2,4 @@
 
 warning! We are not responsible for any damage resulting from the use of this program.
 
-경고! 이 프로그램은 아직 미완성이며, 현재 반달성 문서를 삭제해도 반달로 인식하여 차단되는 오류가 있습니다. 사용 시 주의 바랍니다.
+경고! 이 프로그램은 아직 미완성입니다.
