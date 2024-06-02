@@ -7,17 +7,17 @@ from selenium.webdriver.support.ui import Select
 
 def block(document_, blocking) :
     if blocking not in blocked :
-        driver.get('https://haneul.wiki/aclgroup?group=차단된 사용자')
+        driver.get('https://haneul.wiki/aclgroup?group=차단된 사용자') #ACLGroup 창으로 이동
         time.sleep(2)
         option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown1 = Select(option1)
-        dropdown1.select_by_value("username")
+        dropdown1.select_by_value("username") #ACLGroup 창에서 사용자 이름으로 옵션 지정
         time.sleep(0.7)
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
-        option2.send_keys(blocking)
+        option2.send_keys(blocking) #차단할 사용자 이름 입력
         time.sleep(0.7)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
-        option3.send_keys("%s r0 긴급차단 | 자동 차단 (차단이 잘못된 경우 하늘위키:차단 소명 게시판에 토론 발제 바람)" % block_memo(document_))
+        option3.send_keys("%s r0 긴급차단 | 자동 차단 (차단이 잘못된 경우 하늘위키:차단 소명 게시판에 토론 발제 바람)" % block_memo(document_)) #차단 사유(메모) 지정
         time.sleep(2)
         add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
         add_block.click()
@@ -90,10 +90,10 @@ while True :
         else:
             edited_user.append(value)
 
-    print(edited_document)
-    print(edited_user)
+    print(edited_document) #최근 변경 문서 출력
+    print(edited_user) #최근 변경 문서들에 대응되는 사용자명 출력
 
     for i,j in zip(edited_document,edited_user) :
-        if any(v in i for v in vandalism):
-            block(i, j)
+        if any(v in i for v in vandalism): #문서명이 위의 vandalism 리스트에 해당된다면
+            block(i, j) #차단 함수 실행
     time.sleep(10)
