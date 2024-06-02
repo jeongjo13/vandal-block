@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import time
@@ -42,24 +43,28 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
 def trash(doc) : #반달성 문서 휴지통화시키는 함수
     if "사용자" not in doc :
         driver.get('https://haneul.wiki/delete/%s' % doc)
-        delete_reason = driver.find_element(By.XPATH,'//*[@id="logInput"]') # 문서 삭제 시 편집 요약
-        delete_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 이 계정을 차단 바랍니다.)")
-        delete_check = driver.find_element(By.XPATH,'//*[@id="agreeCheckbox"]')
-        delete_check.click()
-        delete_button = driver.find_element(By.XPATH, '//*[@id="submitBtn"]')
-        delete_button.click()
-        driver.get('https://haneul.wiki/move/%s' % doc)
-        move_document = driver.find_element(By.XPATH,'//*[@id="titleInput"]') #문서 이동 시 사용할 휴지통 문서명
-        move_document.send_keys('휴지통:%s' % trashname())
-        move_document_memo = driver.find_element(By.XPATH,'//*[@id="logInput"]')
-        move_document_memo.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 이 계정을 차단 바랍니다.)")
-        move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
-        move_button.click()
+        try :
+            delete_reason = driver.find_element(By.XPATH,'//*[@id="logInput"]') # 문서 삭제 시 편집 요약
+            delete_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 이 계정을 차단 바랍니다.)")
+            delete_check = driver.find_element(By.XPATH,'//*[@id="agreeCheckbox"]')
+            delete_check.click()
+            delete_button = driver.find_element(By.XPATH, '//*[@id="submitBtn"]')
+            delete_button.click()
+            driver.get('https://haneul.wiki/move/%s' % doc)
+            move_document = driver.find_element(By.XPATH,'//*[@id="titleInput"]') #문서 이동 시 사용할 휴지통 문서명
+            move_document.send_keys('휴지통:%s' % trashname())
+            move_document_memo = driver.find_element(By.XPATH,'//*[@id="logInput"]')
+            move_document_memo.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 이 계정을 차단 바랍니다.)")
+            move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
+            move_button.click()
+        except TimeoutException :
+            print("문서 삭제 및 휴지통화 실패")
+
 def trashname() :
     a = random.randrange(10000000, 99999999)
     return(a)
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
-blocked = ["Vanilla","jeongjo13"]
+blocked = ["Vanilla","jeongjo13","Cordelia","soupcake27"]
 
 # Chrome WebDriver 초기화
 driver = webdriver.Chrome()
