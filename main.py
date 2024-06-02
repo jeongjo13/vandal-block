@@ -37,7 +37,7 @@ blocked = []
 # Chrome WebDriver 초기화
 driver = webdriver.Chrome()
 
-# 크롬 드라이버에 URL 주소 넣고 실행
+# 크롬 드라이버에 URL 주소 넣고 로그인 창 실행
 driver.get('https://haneul.wiki/member/login?redirect=%2Faclgroup')
 time.sleep(2.5)  # 페이지가 완전히 로딩되도록 2.5초 동안 기다림
 
