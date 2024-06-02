@@ -193,9 +193,7 @@ while True :
         if num >= 11 :
             num = 0
             break
-        time.sleep(0.1)
-
-
+        time.sleep(0.01)
 
     #사용자 토론을 통한 긴급 정지 여부 확인
     driver.get('https://haneul.wiki/discuss/%EC%82%AC%EC%9A%A9%EC%9E%90%3Ajeongjo13%2F%EA%B8%B4%EA%B8%89%20%EC%A0%95%EC%A7%80')
@@ -203,4 +201,4 @@ while True :
         element = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/div[4]/div/div')
         break
     except NoSuchElementException:
-        time.sleep(0.05)
+        time.sleep(0.01)
