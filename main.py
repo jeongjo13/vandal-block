@@ -60,7 +60,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
         try :
             driver.get('https://haneul.wiki/delete/%s' % doc)
             delete_reason = driver.find_element(By.XPATH,'//*[@id="logInput"]') # 문서 삭제 시 편집 요약
-            delete_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)")
+            delete_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 삭제 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)")
             delete_check = driver.find_element(By.XPATH,'//*[@id="agreeCheckbox"]')
             delete_check.click()
             delete_button = driver.find_element(By.XPATH, '//*[@id="submitBtn"]')
@@ -80,7 +80,7 @@ def trashname() :
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = ["Vanilla","jeongjo13","Cordelia","soupcake27"]
 # 감지할 반달성 키워드
-vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "FUCK_", "satoehaseyo", "must resign", "해웃돈", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구"]
+vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "FUCK_", "satoehaseyo", "must resign", "해웃돈", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
 # 자신의 위키 로그인 아이디
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
@@ -195,6 +195,15 @@ while True :
                                 block(i, j, lastest_version)
                                 revert(i, lastest_version)
                                 break
+                else :
+                    driver.get("https://haneul.wiki/raw/%s?rev=%d" % (i, lastest_version))
+                    time.sleep(0.5)
+                    lastest_doc = get_doc_text()
+                    for k in vandalism :
+                        if k in lastest_doc :
+                            block(i, j, lastest_version)
+                            trash(i)
+                            break
             except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
                 print("error")
             num += 1;
