@@ -19,7 +19,7 @@ def block(document_, blocking, rev) :
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
-        option3.send_keys("%s r%d 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)" % (block_memo(document_), rev))
+        option3.send_keys("%s r%d 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)" % (block_memo(document_), rev))
         option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/div[3]/select') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown2 = Select(option4)
         dropdown2.select_by_value("0")
@@ -129,7 +129,7 @@ while True :
     edited_document = []
     edited_user = []
 
-    vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot","Fuck_","사퇴 기원","sibal_","No_","FUCK_","satoehaseyo","must resign","해웃돈","혁명본부 만세","wikiRevolution","wikirevolution"]
+    vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot","Fuck_","사퇴 기원","sibal_","No_","FUCK_","satoehaseyo","must resign","해웃돈","혁명본부 만세","wikiRevolution","wikirevolution", "사퇴를 촉구"]
 
     for index, value in enumerate(document_names):
         if index % 2 == 0:
@@ -145,7 +145,7 @@ while True :
             block(i, j, 1)
             trash(i)
 
-    #문서 변경사항 검토
+    # 문서 변경사항 검토
     # RecentChanges 페이지로 이동
     driver.get('https://haneul.wiki/RecentChanges')
     time.sleep(0.4)
@@ -193,9 +193,7 @@ while True :
         if num >= 11 :
             num = 0
             break
-        time.sleep(0.1)
-
-
+        time.sleep(0.01)
 
     #사용자 토론을 통한 긴급 정지 여부 확인
     driver.get('https://haneul.wiki/discuss/%EC%82%AC%EC%9A%A9%EC%9E%90%3Ajeongjo13%2F%EA%B8%B4%EA%B8%89%20%EC%A0%95%EC%A7%80')
@@ -203,4 +201,4 @@ while True :
         element = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/div[4]/div/div')
         break
     except NoSuchElementException:
-        time.sleep(0.05)
+        time.sleep(0.01)
