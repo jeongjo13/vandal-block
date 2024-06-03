@@ -20,16 +20,16 @@ def block(document_, blocking, rev) :
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
         option3.send_keys("%s r%d 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)" % (block_memo(document_), rev))
-        option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/div[3]/select') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
+        option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
         dropdown2 = Select(option4)
         dropdown2.select_by_value("0")
         time.sleep(0.05)
-        add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
+        add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
         add_block.click()
         blocked.append(blocking)
 
 def get_doc_text() :
-    doc_text_field = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/textarea')
+    doc_text_field = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/textarea')
     doc_text = doc_text_field.text
     return doc_text
 
@@ -47,9 +47,9 @@ def revert(doc, rev) :
     driver.get(f"https://haneul.wiki/revert/{doc}?rev={rev:d}")
     try :
         time.sleep(0.5)
-        revert_reason = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/input')
+        revert_reason = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/input')
         revert_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 되돌리기 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.")
-        revert_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div/button')
+        revert_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div/button')
         revert_button.click()
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print(f"Error in revert function: {e}")
@@ -94,17 +94,17 @@ driver.get('https://haneul.wiki/member/login?redirect=%2Faclgroup')
 time.sleep(2.5)  # 페이지가 완전히 로딩되도록 2.5초 동안 기다림
 
 # 아이디 입력
-username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[1]/input')
+username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[1]/input')
 username.send_keys(wiki_username)
 time.sleep(0.5)
 
 # 비밀번호 입력
-password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[2]/input')
+password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[2]/input')
 password.send_keys(wiki_password)
 time.sleep(0.5)
 
 # 로그인 버튼 클릭
-login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/button')
+login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/button')
 login_button.click()
 time.sleep(1)
 
@@ -178,7 +178,7 @@ while True :
             driver.get('https://haneul.wiki/history/%s' % i)
             time.sleep(0.5)
             try :
-                version = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/ul/li[1]/strong[1]')
+                version = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/ul/li[1]/strong[1]')
                 lastest_version = version.text  #해당 문서의 최신 리비전
                 lastest_version = lastest_version[1:]
                 lastest_version = int(lastest_version)
@@ -218,7 +218,7 @@ while True :
     try :
         driver.get('https://haneul.wiki/discuss/%EC%82%AC%EC%9A%A9%EC%9E%90%3Ajeongjo13%2F%EA%B8%B4%EA%B8%89%20%EC%A0%95%EC%A7%80')
         try:
-            element = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/div[4]/div/div')
+            element = driver.find_element(By.XPATH, '//*[@id="1"]')
             break
         except NoSuchElementException:
             time.sleep(0.01)
