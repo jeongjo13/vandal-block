@@ -195,6 +195,15 @@ while True :
                                 block(i, j, lastest_version)
                                 revert(i, lastest_version)
                                 break
+                else :
+                    driver.get("https://haneul.wiki/raw/%s?rev=%d" % (i, lastest_version))
+                    time.sleep(0.5)
+                    lastest_doc = get_doc_text()
+                    for k in vandalism :
+                        if k in lastest_doc :
+                            block(i, j, lastest_version)
+                            trash(i)
+                            break
             except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
                 print("error")
             num += 1;
