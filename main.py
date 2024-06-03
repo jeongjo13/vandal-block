@@ -60,7 +60,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
         try :
             driver.get('https://haneul.wiki/delete/%s' % doc)
             delete_reason = driver.find_element(By.XPATH,'//*[@id="logInput"]') # 문서 삭제 시 편집 요약
-            delete_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)")
+            delete_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 삭제 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)")
             delete_check = driver.find_element(By.XPATH,'//*[@id="agreeCheckbox"]')
             delete_check.click()
             delete_button = driver.find_element(By.XPATH, '//*[@id="submitBtn"]')
