@@ -80,7 +80,7 @@ def trashname() :
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = ["Vanilla","jeongjo13","Cordelia","soupcake27"]
 # 감지할 반달성 키워드
-vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "FUCK_", "satoehaseyo", "must resign", "해웃돈", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구"]
+vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "FUCK_", "satoehaseyo", "must resign", "해웃돈", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
 # 자신의 위키 로그인 아이디
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
