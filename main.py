@@ -28,6 +28,24 @@ def block(document_, blocking, rev) :
         add_block.click()
         blocked.append(blocking)
 
+def block_thread(thread, blocking, comment_number) :
+    if blocking not in blocked :
+        driver.get('https://haneul.wiki/aclgroup?group=차단된 사용자')
+        option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
+        dropdown1 = Select(option1)
+        dropdown1.select_by_value("username")
+        option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
+        option2.send_keys(blocking)
+        option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
+        option3.send_keys("토론 %s #%d 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)" % (thread, comment_number))
+        option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
+        dropdown2 = Select(option4)
+        dropdown2.select_by_value("0")
+        time.sleep(0.05)
+        add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
+        add_block.click()
+        blocked.append(blocking)
+
 def get_doc_text() :
     doc_text_field = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/textarea')
     doc_text = doc_text_field.text
@@ -77,6 +95,21 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
 
 def trashname() :
     return("%s%s%s%s%s%s" % (now.year, now.month, now.day, now.hour, now.minute, now.second))
+
+def check_thread(thread) :
+    thread = thread[27:]
+    return(thread)
+
+def check_thread_user(thread) :
+    driver.get(thread)
+    time.sleep(10)
+    try :
+        thread_user_text = driver.find_element(By.XPATH, '//*[@id="res-container"]/div[1]/div/div[1]/a')
+        thread_user = thread_user_text.text
+        return(thread_user)
+    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) :
+        print("[오류!] 토론 발제자를 식별하지 못했습니다.")
+
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = ["Vanilla","jeongjo13","Cordelia","soupcake27"]
 # 감지할 반달성 키워드
@@ -150,7 +183,7 @@ while True :
                 block(i, j, 1)
                 trash(i)
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print("error")
+        print("[오류!] 최근 변경의 새 문서 탭을 검토할 수 없습니다.")
 
     # 문서 변경사항 검토
     # RecentChanges 페이지로 이동
@@ -212,8 +245,39 @@ while True :
                 break
             time.sleep(0.01)
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print("error")
+        print("[오류!] 최근 변경의 전체 탭을 검토할 수 없습니다.")
+    #최근 토론에서 반달성 제목을 가진 토론 추출 및 차단
+    try :
+        driver.get('https://haneul.wiki/RecentDiscuss')
+        time.sleep(0.4)
 
+        # 페이지 소스 가져오기
+        page_source = driver.page_source
+
+        # BeautifulSoup을 사용하여 페이지 소스를 파싱
+        soup = bs(page_source, 'html.parser')
+
+        threads = []
+        thread_url = []
+        thread_text = []
+
+        for a_tag in soup.find_all('a', href=True):
+            href = a_tag['href']
+            if href.startswith('/thread/'):
+                full_url = f"https://haneul.wiki{href}"
+                text = a_tag.get_text(strip=True)
+                thread_url.append(full_url)
+                thread_text.append(text)
+        print(thread_url)
+        print(thread_text)
+
+        for i,j in zip(thread_text,thread_url) :
+            for k in vandalism :
+                if k in i :
+                    block_thread(check_thread(j), check_thread_user(j), 1)
+
+    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+        print("[오류!] 최근 토론의 열린 토론 탭을 검토할 수 없습니다.")
     #사용자 토론을 통한 긴급 정지 여부 확인
     try :
         driver.get('https://haneul.wiki/discuss/%EC%82%AC%EC%9A%A9%EC%9E%90%3Ajeongjo13%2F%EA%B8%B4%EA%B8%89%20%EC%A0%95%EC%A7%80')
@@ -223,4 +287,4 @@ while True :
         except NoSuchElementException:
             time.sleep(0.01)
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print("error")
+        print("[오류!] 사용자 토론 긴급 정지 여부를 검토할 수 없습니다.")
