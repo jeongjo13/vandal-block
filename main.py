@@ -110,6 +110,23 @@ def check_thread_user(thread) :
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) :
         print("[오류!] 토론 발제자를 식별하지 못했습니다.")
 
+def close_thread(thread) :
+    driver.get(thread)
+    close_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/button')
+    close_button.click()
+    time.sleep(1)
+    new_document = driver.find_element(By.XPATH, '//*[@id="thread-document-form"]/input')
+    new_document.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
+    new_document.send_keys('휴지통:토론 휴지통')
+    update_thread_document_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[2]/button')
+    update_thread_document_button.click()
+    time.sleep(1)
+    new_topic = driver.find_element(By.XPATH, '//*[@id="thread-topic-form"]/input')
+    new_topic.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
+    new_topic.send_keys('.')
+    update_thread_topic_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[3]/button')
+    update_thread_topic_button.click()
+
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = ["Vanilla","jeongjo13","Cordelia","soupcake27"]
 # 감지할 반달성 키워드
@@ -275,16 +292,19 @@ while True :
             for k in vandalism :
                 if k in i :
                     block_thread(check_thread(j), check_thread_user(j), 1)
-
+                    close_thread(j)
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 토론의 열린 토론 탭을 검토할 수 없습니다.")
+    '''
     #사용자 토론을 통한 긴급 정지 여부 확인
     try :
         driver.get('https://haneul.wiki/discuss/%EC%82%AC%EC%9A%A9%EC%9E%90%3Ajeongjo13%2F%EA%B8%B4%EA%B8%89%20%EC%A0%95%EC%A7%80')
         try:
+            time.sleep(1)
             element = driver.find_element(By.XPATH, '//*[@id="1"]')
             break
         except NoSuchElementException:
             time.sleep(0.01)
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 사용자 토론 긴급 정지 여부를 검토할 수 없습니다.")
+        '''
