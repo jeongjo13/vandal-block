@@ -183,8 +183,10 @@ while True :
             href = link.get('href')
             if href.startswith('/w/') and link.text.strip():
                 document_names.append(link.text.strip())
-
-        document_names.remove("내 사용자 문서")
+        try :
+            document_names.remove("내 사용자 문서")
+        except ValueError :
+            print("[오류!] 리스트에서 사용자 문서를 제거할 수 없습니다.")
         print(document_names)
 
         edited_document = []
