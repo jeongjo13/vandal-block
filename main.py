@@ -52,12 +52,12 @@ def get_doc_text() :
     return doc_text
 
 def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~~~과 같이 들어갈 것을 지정해줌
-    if "하늘위키" not in name :
-        if "틀" not in name :
-            if "분류" not in name :
-                if "파일" not in name :
-                    if "휴지통" not in name :
-                        if "사용자" not in name :
+    if "하늘위키:" not in name :
+        if "틀:" not in name :
+            if "분류:" not in name :
+                if "파일:" not in name :
+                    if "휴지통:" not in name :
+                        if "사용자:" not in name :
                             name = "문서:" + name
     return(name)
 def revert(doc, rev) :
