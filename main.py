@@ -130,7 +130,7 @@ def close_thread(thread) :
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = ["Vanilla","jeongjo13","Cordelia","soupcake27"]
 # 감지할 반달성 키워드
-vandalism = ["사퇴하세요", "뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "FUCK_", "satoehaseyo", "must resign", "해웃돈", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
+vandalism = ["뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "FUCK_", "satoehaseyo", "must resign", "해웃돈", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
 # 자신의 위키 로그인 아이디
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
@@ -263,6 +263,18 @@ while True :
             time.sleep(0.01)
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 변경의 전체 탭을 검토할 수 없습니다.")
+
+    #사용자 토론을 통한 긴급 정지 여부 확인
+    try :
+        driver.get('https://haneul.wiki/discuss/%EC%82%AC%EC%9A%A9%EC%9E%90%3Ajeongjo13%2F%EA%B8%B4%EA%B8%89%20%EC%A0%95%EC%A7%80')
+        try:
+            time.sleep(1)
+            element = driver.find_element(By.XPATH, '//*[@id="1"]')
+            break
+        except NoSuchElementException:
+            time.sleep(0.01)
+    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+        print("[오류!] 사용자 토론 긴급 정지 여부를 검토할 수 없습니다.")
     #최근 토론에서 반달성 제목을 가진 토론 추출 및 차단
     try :
         driver.get('https://haneul.wiki/RecentDiscuss')
@@ -295,16 +307,3 @@ while True :
                     close_thread(j)
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 토론의 열린 토론 탭을 검토할 수 없습니다.")
-    '''
-    #사용자 토론을 통한 긴급 정지 여부 확인
-    try :
-        driver.get('https://haneul.wiki/discuss/%EC%82%AC%EC%9A%A9%EC%9E%90%3Ajeongjo13%2F%EA%B8%B4%EA%B8%89%20%EC%A0%95%EC%A7%80')
-        try:
-            time.sleep(1)
-            element = driver.find_element(By.XPATH, '//*[@id="1"]')
-            break
-        except NoSuchElementException:
-            time.sleep(0.01)
-    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print("[오류!] 사용자 토론 긴급 정지 여부를 검토할 수 없습니다.")
-        '''
