@@ -157,6 +157,9 @@ password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]
 password.send_keys(wiki_password)
 time.sleep(0.5)
 
+auto_login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[3]/label/input')
+auto_login_button.click()
+
 # 로그인 버튼 클릭
 login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/button')
 login_button.click()
