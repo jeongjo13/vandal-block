@@ -94,7 +94,8 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             print(f"Error in trash function: {e}")
 
 def trashname() :
-    return("%s%s%s%s%s%s" % (now.year, now.month, now.day, now.hour, now.minute, now.second))
+    a = random.randrange(1000000000, 9999999999)
+    return (a)
 
 def check_thread(thread) :
     thread = thread[27:]
