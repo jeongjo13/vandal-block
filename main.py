@@ -97,7 +97,7 @@ def revert(doc, rev) : #반달성 편집 되돌리는 함수
 
 
 def trash(doc) : #반달성 문서 휴지통화시키는 함수
-    if "사용자" not in doc :
+    if "사용자:" not in doc :
         try :
             driver.get('https://haneul.wiki/delete/%s' % doc)
             delete_reason = driver.find_element(By.XPATH,'//*[@id="logInput"]') # 문서 삭제 시 편집 요약
@@ -108,7 +108,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             delete_button.click() #문서 삭제 버튼 클릭
         except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
             print("[오류!] 문서를 삭제할 수 없습니다.")
-        try : 
+        try :
             driver.get('https://haneul.wiki/move/%s' % doc)
             move_document = driver.find_element(By.XPATH,'//*[@id="titleInput"]') #문서 이동 시 사용할 휴지통 문서명
             move_document.send_keys('휴지통:%s' % trashname())
