@@ -1,3 +1,12 @@
+# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
+blocked = []
+# 감지할 반달성 키워드
+vandalism = ["뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "FUCK_", "satoehaseyo", "must resign", "해웃돈", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
+# 자신의 위키 로그인 아이디
+wiki_username = ''
+# 자신의 위키 로그인 비밀번호
+wiki_password = ''
+
 from selenium import webdriver
 from selenium.common import TimeoutException, NoSuchElementException, ElementClickInterceptedException
 from selenium.webdriver.common.by import By
@@ -130,15 +139,6 @@ def close_thread(thread) : #토론 닫기 함수
     new_topic.send_keys('.') #새 토론 주제 (강제 조치와 같은 걸로 변경하고 싶으면 이걸 수정 바람)
     update_thread_topic_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[3]/button')
     update_thread_topic_button.click() # 토론 주제 변경 클릭
-
-# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
-blocked = []
-# 감지할 반달성 키워드
-vandalism = ["뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "FUCK_", "satoehaseyo", "must resign", "해웃돈", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
-# 자신의 위키 로그인 아이디
-wiki_username = ''
-# 자신의 위키 로그인 비밀번호
-wiki_password = ''
 
 # Chrome WebDriver 초기화
 driver = webdriver.Chrome()
