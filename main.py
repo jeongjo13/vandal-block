@@ -74,7 +74,7 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
     return(name) #문서명 반환
 def revert(doc, rev) : #반달성 편집 되돌리는 함수
     rev = rev - 1
-    driver.get(f"https://haneul.wiki/revert/{doc}?rev={rev:d}") #해당 문서의 정상적인 리비전으로 접속
+    driver.get(f"https://haneul.wiki/revert/{doc}?rev={rev:d}") #해당 문서의 정상적인 리비전으로 되돌리는 페이지에 접속
     try :
         time.sleep(0.5)
         revert_reason = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/input')
@@ -82,7 +82,7 @@ def revert(doc, rev) : #반달성 편집 되돌리는 함수
         revert_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div/button')
         revert_button.click() #되돌리기 클릭
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print(f"Error in revert function: {e}")
+        print("[오류!] 반달성 편집을 되돌리지 못했습니다.")
 
 
 def trash(doc) : #반달성 문서 휴지통화시키는 함수
