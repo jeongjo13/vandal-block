@@ -39,7 +39,7 @@ def block(document_, blocking, rev) : #문서 편집으로 인한 차단 시 차
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
-        option3.send_keys("%s r%d 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)" % (block_memo(document_), rev))
+        option3.send_keys("%s r%d 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지/자동\'에 토론 발제 바랍니다.)" % (block_memo(document_), rev))
         option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
         dropdown2 = Select(option4)
         dropdown2.select_by_value("0")
@@ -57,7 +57,7 @@ def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
-        option3.send_keys("토론 %s #%d 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)" % (thread, comment_number))
+        option3.send_keys("토론 %s #%d 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지/자동\'에 토론 발제 바랍니다.)" % (thread, comment_number))
         option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
         dropdown2 = Select(option4)
         dropdown2.select_by_value("0")
@@ -89,7 +89,7 @@ def revert(doc, rev) : #반달성 편집 되돌리는 함수
     try :
         time.sleep(0.5)
         revert_reason = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/input')
-        revert_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 되돌리기 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.") #편집 요약
+        revert_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 되돌리기 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지/자동\'에 토론 발제 바랍니다.") #편집 요약
         revert_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div/button')
         revert_button.click() #되돌리기 클릭
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
@@ -101,7 +101,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
         try :
             driver.get('https://haneul.wiki/delete/%s' % doc)
             delete_reason = driver.find_element(By.XPATH,'//*[@id="logInput"]') # 문서 삭제 시 편집 요약
-            delete_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 삭제 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)")
+            delete_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 삭제 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지/자동\'에 토론 발제 바랍니다.)")
             delete_check = driver.find_element(By.XPATH,'//*[@id="agreeCheckbox"]')
             delete_check.click()
             delete_button = driver.find_element(By.XPATH, '//*[@id="submitBtn"]')
@@ -113,7 +113,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             move_document = driver.find_element(By.XPATH,'//*[@id="titleInput"]') #문서 이동 시 사용할 휴지통 문서명
             move_document.send_keys('휴지통:%s' % trashname())
             move_document_memo = driver.find_element(By.XPATH,'//*[@id="logInput"]')
-            move_document_memo.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지\'에 토론 발제 바랍니다.)")
+            move_document_memo.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지/자동\'에 토론 발제 바랍니다.)")
             move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
             move_button.click() #문서 이동 버튼 클릭
         except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
