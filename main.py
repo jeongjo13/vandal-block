@@ -275,10 +275,11 @@ while True :
 
     #사용자 토론을 통한 긴급 정지 여부 확인
     try :
-        driver.get('https://haneul.wiki/discuss/%EC%82%AC%EC%9A%A9%EC%9E%90%3Ajeongjo13%2F%EA%B8%B4%EA%B8%89%20%EC%A0%95%EC%A7%80')
+        driver.get('https://haneul.wiki/discuss/사용자:jeongjo13/긴급 정지/자동')
         try:
             time.sleep(1)
             element = driver.find_element(By.XPATH, '//*[@id="1"]')
+            print("[알림] 사용자 토론에 의해 봇을 정지합니다.")
             break
         except NoSuchElementException:
             time.sleep(0.01)
