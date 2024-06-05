@@ -1,5 +1,5 @@
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
-blocked = []
+blocked = []# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 # 감지할 반달성 키워드
 vandalism = ["뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
 # 자신의 위키 로그인 아이디
@@ -19,6 +19,17 @@ import random
 
 now = datetime.now()
 
+def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
+    try :
+        driver.get('https://haneul.wiki/discuss/사용자:jeongjo13/긴급 정지/자동')
+        try:
+            time.sleep(1)
+            element = driver.find_element(By.XPATH, '//*[@id="1"]')
+            return True
+        except NoSuchElementException:
+            return False
+    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+        print("[오류!] 사용자 토론 긴급 정지 여부를 검토할 수 없습니다.")
 def block(document_, blocking, rev) : #문서 편집으로 인한 차단 시 차단하는 함수
     if blocking not in blocked :
         driver.get('https://haneul.wiki/aclgroup?group=차단된 사용자')
@@ -210,7 +221,8 @@ while True :
                 trash(i)
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 변경의 새 문서 탭을 검토할 수 없습니다.")
-
+    if emergency_stop() == True :
+        break
     # 문서 변경사항 검토
     # RecentChanges 페이지로 이동
     try :
@@ -272,19 +284,8 @@ while True :
             time.sleep(0.01)
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 변경의 전체 탭을 검토할 수 없습니다.")
-
-    #사용자 토론을 통한 긴급 정지 여부 확인
-    try :
-        driver.get('https://haneul.wiki/discuss/사용자:jeongjo13/긴급 정지/자동')
-        try:
-            time.sleep(1)
-            element = driver.find_element(By.XPATH, '//*[@id="1"]')
-            print("[알림] 사용자 토론에 의해 봇을 정지합니다.")
-            break
-        except NoSuchElementException:
-            time.sleep(0.01)
-    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print("[오류!] 사용자 토론 긴급 정지 여부를 검토할 수 없습니다.")
+    if emergency_stop() == True :
+        break
     #최근 토론에서 반달성 제목을 가진 토론 추출 및 차단
     try :
         driver.get('https://haneul.wiki/RecentDiscuss')
