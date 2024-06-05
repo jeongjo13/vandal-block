@@ -106,6 +106,9 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             delete_check.click()
             delete_button = driver.find_element(By.XPATH, '//*[@id="submitBtn"]')
             delete_button.click() #문서 삭제 버튼 클릭
+        except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+            print("[오류!] 문서를 삭제할 수 없습니다.")
+        try : 
             driver.get('https://haneul.wiki/move/%s' % doc)
             move_document = driver.find_element(By.XPATH,'//*[@id="titleInput"]') #문서 이동 시 사용할 휴지통 문서명
             move_document.send_keys('휴지통:%s' % trashname())
@@ -114,7 +117,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
             move_button.click() #문서 이동 버튼 클릭
         except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-            print(f"Error in trash function: {e}")
+            print("[알림] 문서를 휴지통화할 수 없습니다.")
 
 def trashname() : #휴지통화할 때 휴지통 문서명 반환해주는 함수
     a = random.randrange(1000000000, 9999999999) #랜덤한 10자리 수 지정 후
