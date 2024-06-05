@@ -1,3 +1,12 @@
+# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
+blocked = []
+# 감지할 반달성 키워드
+vandalism = ["뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
+# 자신의 위키 로그인 아이디
+wiki_username = ''
+# 자신의 위키 로그인 비밀번호
+wiki_password = ''
+
 from selenium import webdriver
 from selenium.common import TimeoutException, NoSuchElementException, ElementClickInterceptedException
 from selenium.webdriver.common.by import By
@@ -65,7 +74,7 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
     return(name) #문서명 반환
 def revert(doc, rev) : #반달성 편집 되돌리는 함수
     rev = rev - 1
-    driver.get(f"https://haneul.wiki/revert/{doc}?rev={rev:d}") #해당 문서의 정상적인 리비전으로 접속
+    driver.get(f"https://haneul.wiki/revert/{doc}?rev={rev:d}") #해당 문서의 정상적인 리비전으로 되돌리는 페이지에 접속
     try :
         time.sleep(0.5)
         revert_reason = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/input')
@@ -73,7 +82,7 @@ def revert(doc, rev) : #반달성 편집 되돌리는 함수
         revert_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div/button')
         revert_button.click() #되돌리기 클릭
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print(f"Error in revert function: {e}")
+        print("[오류!] 반달성 편집을 되돌리지 못했습니다.")
 
 
 def trash(doc) : #반달성 문서 휴지통화시키는 함수
@@ -130,15 +139,6 @@ def close_thread(thread) : #토론 닫기 함수
     new_topic.send_keys('.') #새 토론 주제 (강제 조치와 같은 걸로 변경하고 싶으면 이걸 수정 바람)
     update_thread_topic_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[3]/button')
     update_thread_topic_button.click() # 토론 주제 변경 클릭
-
-# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
-blocked = []
-# 감지할 반달성 키워드
-vandalism = ["뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "FUCK_", "satoehaseyo", "must resign", "해웃돈", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
-# 자신의 위키 로그인 아이디
-wiki_username = ''
-# 자신의 위키 로그인 비밀번호
-wiki_password = ''
 
 # Chrome WebDriver 초기화
 driver = webdriver.Chrome()
@@ -275,10 +275,11 @@ while True :
 
     #사용자 토론을 통한 긴급 정지 여부 확인
     try :
-        driver.get('https://haneul.wiki/discuss/%EC%82%AC%EC%9A%A9%EC%9E%90%3Ajeongjo13%2F%EA%B8%B4%EA%B8%89%20%EC%A0%95%EC%A7%80')
+        driver.get('https://haneul.wiki/discuss/사용자:jeongjo13/긴급 정지/자동')
         try:
             time.sleep(1)
             element = driver.find_element(By.XPATH, '//*[@id="1"]')
+            print("[알림] 사용자 토론에 의해 봇을 정지합니다.")
             break
         except NoSuchElementException:
             time.sleep(0.01)
