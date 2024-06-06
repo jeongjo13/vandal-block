@@ -3,6 +3,8 @@
 **warning! We are not responsible for any damage resulting from the use of this program.**
 
 # 프로그램 설명
+하늘위키에서 jeongjo13이 사용하는 반달 자동 차단 봇 코드입니다.
+
 imitated seed 엔진 위키에서의 반달을 자동 감지하고 차단합니다. 반달성 문서 삭제 및 휴지통화 등의 후속 조치도 자동으로 진행됩니다.
 
 # 프로그램 기능
