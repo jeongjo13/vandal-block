@@ -73,14 +73,14 @@ def get_doc_text() : #문서 RAW 읽어오는 함수
 
 def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~~~과 같이 들어갈 것을 지정해줌
     #만약 문서 이름공간에서의 반달이라면
-    if "하늘위키:" not in name :
-        if "틀:" not in name :
-            if "분류:" not in name :
-                if "파일:" not in name :
-                    if "휴지통:" not in name :
-                        if "사용자:" not in name :
-                            if "위키관리:" not in name :
-                                if "가상위키:" not in name :
+    if not name.startswith("하늘위키:") :
+        if not name.startswith("틀:") :
+            if not name.startswith("분류:") :
+                if not name.startswith("파일:") :
+                    if not name.startswith("휴지통:") :
+                        if not name.startswith("파일:") :
+                            if not name.startswith("위키관리:") :
+                                if not name.startswith("가상위키:") :
                                     name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
     return(name) #문서명 반환
 def revert(doc, rev) : #반달성 편집 되돌리는 함수
