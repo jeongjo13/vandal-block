@@ -1,5 +1,5 @@
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
-blocked = ["Vanilla", "jeongjo13", "Cordelia", "soupcake27", "ADV341000", "SinseoHS_Stults", "LOTTEWORLD"]# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
+blocked = ["jeongjo13"]# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 # 감지할 반달성 키워드
 vandalism = ["은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
 # 자신의 위키 로그인 아이디
@@ -86,7 +86,7 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
                     if not name.startswith("휴지통:") :
                         if not name.startswith("파일:") :
                             if not name.startswith("위키관리:") :
-                                if not name.startswith("위키운영:") : 
+                                if not name.startswith("위키운영:") :
                                     if not name.startswith("가상위키:") :
                                         name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
     return(name) #문서명 반환
@@ -165,7 +165,7 @@ def close_thread(thread) : #토론 닫기 함수
 driver = webdriver.Chrome()
 
 # 크롬 드라이버에 URL 주소 넣고 실행
-driver.get('%s/member/login?redirect=%2Faclgroup' % wiki_url)
+driver.get("{}/member/login?redirect=%2Faclgroup".format(wiki_url))
 time.sleep(2.5)  # 페이지가 완전히 로딩되도록 2.5초 동안 기다림
 
 # 아이디 입력
