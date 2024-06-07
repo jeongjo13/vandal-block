@@ -116,7 +116,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
         except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
             print("[오류!] 문서를 삭제할 수 없습니다.")
         try :
-            driver.get('%s/move/%s' % % (wiki_url, doc))
+            driver.get('%s/move/%s' % (wiki_url, doc))
             move_document = driver.find_element(By.XPATH,'//*[@id="titleInput"]') #문서 이동 시 사용할 휴지통 문서명
             move_document.send_keys('휴지통:%s' % trashname())
             move_document_memo = driver.find_element(By.XPATH,'//*[@id="logInput"]')
