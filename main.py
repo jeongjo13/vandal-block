@@ -31,6 +31,7 @@ def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
         try:
             time.sleep(1)
             element = driver.find_element(By.XPATH, '//*[@id="1"]')
+            print("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다.")
             return True
         except NoSuchElementException:
             return False
@@ -131,7 +132,7 @@ def trashname() : #휴지통화할 때 휴지통 문서명 반환해주는 함�
     return (a) #반환
 
 def check_thread(thread) : #토론 주소에서 토론 ~~~의 부분만 반환
-    thread = thread[33:] #https://위키주소/thread/부분은 자르고 나머지 부분만 남김 (다른 위키에서 사용 시 수정 필요)
+    thread = thread[27:] #https://위키주소/thread/부분은 자르고 나머지 부분만 남김 (다른 위키에서 사용 시 수정 필요)
     return(thread) #토론 주소 반환
 
 def check_thread_user(thread) :
