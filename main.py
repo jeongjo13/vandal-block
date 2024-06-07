@@ -6,6 +6,12 @@ vandalism = ["은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "�
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
 wiki_password = ''
+# 위키 주소
+wiki_url = ""
+# 위키 이름
+wiki_name = ""
+# 긴급 정지 토론 발제 문서
+emergency_stop_document = ""
 
 from selenium import webdriver
 from selenium.common import TimeoutException, NoSuchElementException, ElementClickInterceptedException
@@ -21,7 +27,7 @@ now = datetime.now()
 
 def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
     try :
-        driver.get('https://haneul.wiki/discuss/사용자:jeongjo13/긴급 정지/자동')
+        driver.get("%s/discuss/%s" % (wiki_url, emergency_stop_document))
         try:
             time.sleep(1)
             element = driver.find_element(By.XPATH, '//*[@id="1"]')
@@ -32,14 +38,14 @@ def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
         print("[오류!] 사용자 토론 긴급 정지 여부를 검토할 수 없습니다.")
 def block(document_, blocking, rev) : #문서 편집으로 인한 차단 시 차단하는 함수
     if blocking not in blocked :
-        driver.get('https://haneul.wiki/aclgroup?group=차단된 사용자')
+        driver.get("%s/aclgroup?group=차단된 사용자" % wiki_url)
         option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown1 = Select(option1)
         dropdown1.select_by_value("username")
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
-        option3.send_keys("%s r%d 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지/자동\'에 토론 발제 바랍니다.)" % (block_memo(document_), rev))
+        option3.send_keys("%s r%d 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (block_memo(document_), rev, wiki_name, emergency_stop_document))
         option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
         dropdown2 = Select(option4)
         dropdown2.select_by_value("0")
@@ -50,14 +56,14 @@ def block(document_, blocking, rev) : #문서 편집으로 인한 차단 시 차
 
 def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단 시 차단하는 함수
     if blocking not in blocked :
-        driver.get('https://haneul.wiki/aclgroup?group=차단된 사용자')
+        driver.get("%s/aclgroup?group=차단된 사용자" % wiki_url)
         option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown1 = Select(option1)
         dropdown1.select_by_value("username")
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
-        option3.send_keys("토론 %s #%d 긴급차단 | 자동 차단 (잘못된 경우 \'하늘위키:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지/자동\'에 토론 발제 바랍니다.)" % (thread, comment_number))
+        option3.send_keys("토론 %s #%d 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (thread, comment_number, wiki_name, emergency_stop_document))
         option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
         dropdown2 = Select(option4)
         dropdown2.select_by_value("0")
@@ -73,23 +79,24 @@ def get_doc_text() : #문서 RAW 읽어오는 함수
 
 def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~~~과 같이 들어갈 것을 지정해줌
     #만약 문서 이름공간에서의 반달이라면
-    if not name.startswith("하늘위키:") :
+    if not name.startswith("%s:" % wiki_name) :
         if not name.startswith("틀:") :
             if not name.startswith("분류:") :
                 if not name.startswith("파일:") :
                     if not name.startswith("휴지통:") :
                         if not name.startswith("파일:") :
                             if not name.startswith("위키관리:") :
-                                if not name.startswith("가상위키:") :
-                                    name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
+                                if not name.startswith("위키운영:") : 
+                                    if not name.startswith("가상위키:") :
+                                        name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
     return(name) #문서명 반환
 def revert(doc, rev) : #반달성 편집 되돌리는 함수
     rev = rev - 1
-    driver.get(f"https://haneul.wiki/revert/{doc}?rev={rev:d}") #해당 문서의 정상적인 리비전으로 되돌리는 페이지에 접속
+    driver.get("%s/revert/%s?rev=%s" % (wiki_url, doc, rev)) #해당 문서의 정상적인 리비전으로 되돌리는 페이지에 접속
     try :
         time.sleep(0.5)
         revert_reason = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/input')
-        revert_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 되돌리기 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지/자동\'에 토론 발제 바랍니다.") #편집 요약
+        revert_reason.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 되돌리기 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document)) #편집 요약
         revert_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div/button')
         revert_button.click() #되돌리기 클릭
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
@@ -99,9 +106,9 @@ def revert(doc, rev) : #반달성 편집 되돌리는 함수
 def trash(doc) : #반달성 문서 휴지통화시키는 함수
     if "사용자:" not in doc :
         try :
-            driver.get('https://haneul.wiki/delete/%s' % doc)
+            driver.get('%s/delete/%s' % (wiki_url, doc))
             delete_reason = driver.find_element(By.XPATH,'//*[@id="logInput"]') # 문서 삭제 시 편집 요약
-            delete_reason.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 삭제 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지/자동\'에 토론 발제 바랍니다.)")
+        revert_reason.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 삭제 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document)) #편집 요약
             delete_check = driver.find_element(By.XPATH,'//*[@id="agreeCheckbox"]')
             delete_check.click()
             delete_button = driver.find_element(By.XPATH, '//*[@id="submitBtn"]')
@@ -109,12 +116,12 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
         except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
             print("[오류!] 문서를 삭제할 수 없습니다.")
         try :
-            driver.get('https://haneul.wiki/move/%s' % doc)
+            driver.get('%s/move/%s' % % (wiki_url, doc))
             move_document = driver.find_element(By.XPATH,'//*[@id="titleInput"]') #문서 이동 시 사용할 휴지통 문서명
             move_document.send_keys('휴지통:%s' % trashname())
             move_document_memo = driver.find_element(By.XPATH,'//*[@id="logInput"]')
-            move_document_memo.send_keys("반달 복구: 반달을 멈추시고 하늘위키에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'하늘위키:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'사용자:jeongjo13/긴급 정지/자동\'에 토론 발제 바랍니다.)")
-            move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
+        revert_reason.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document)) #편집 요약
+        move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
             move_button.click() #문서 이동 버튼 클릭
         except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
             print("[알림] 문서를 휴지통화할 수 없습니다.")
@@ -124,7 +131,7 @@ def trashname() : #휴지통화할 때 휴지통 문서명 반환해주는 함�
     return (a) #반환
 
 def check_thread(thread) : #토론 주소에서 토론 ~~~의 부분만 반환
-    thread = thread[27:] #https://haneul.wiki/thread/부분은 자르고 나머지 부분만 남김 (다른 위키에서 사용 시 수정 필요)
+    thread = thread[33:] #https://위키주소/thread/부분은 자르고 나머지 부분만 남김 (다른 위키에서 사용 시 수정 필요)
     return(thread) #토론 주소 반환
 
 def check_thread_user(thread) :
@@ -158,7 +165,7 @@ def close_thread(thread) : #토론 닫기 함수
 driver = webdriver.Chrome()
 
 # 크롬 드라이버에 URL 주소 넣고 실행
-driver.get('https://haneul.wiki/member/login?redirect=%2Faclgroup')
+driver.get('%s/member/login?redirect=%2Faclgroup' % wiki_url)
 time.sleep(2.5)  # 페이지가 완전히 로딩되도록 2.5초 동안 기다림
 
 # 아이디 입력
@@ -183,7 +190,7 @@ document_names = []
 while True :
     try :
         # RecentChanges 페이지로 이동
-        driver.get('https://haneul.wiki/RecentChanges?logtype=create')
+        driver.get('%s/RecentChanges?logtype=create' % wiki_url)
         time.sleep(0.4)
 
         # 페이지 소스 가져오기
@@ -229,7 +236,7 @@ while True :
     # 문서 변경사항 검토
     # RecentChanges 페이지로 이동
     try :
-        driver.get('https://haneul.wiki/RecentChanges')
+        driver.get('%s/RecentChanges' % wiki_url)
         time.sleep(0.4)
 
         # 페이지 소스 가져오기
@@ -249,7 +256,7 @@ while True :
                 document_names.append(link.text.strip())
         num = 0
         for i,j in zip(edited_document,edited_user) :
-            driver.get('https://haneul.wiki/history/%s' % i)
+            driver.get('%s/history/%s' % (wiki_url, i))
             time.sleep(0.5)
             try :
                 version = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/ul/li[1]/strong[1]')
@@ -257,10 +264,10 @@ while True :
                 lastest_version = lastest_version[1:]
                 lastest_version = int(lastest_version)
                 if lastest_version > 1 :
-                    driver.get("https://haneul.wiki/raw/%s?rev=%d" % (i, lastest_version))
+                    driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version))
                     time.sleep(0.5)
                     lastest_doc = get_doc_text()
-                    driver.get("https://haneul.wiki/raw/%s?rev=%d" % (i, lastest_version-1))
+                    driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version-1))
                     time.sleep(0.5)
                     prev_doc = get_doc_text()
                     for k in vandalism :
@@ -270,7 +277,7 @@ while True :
                                 revert(i, lastest_version)
                                 break
                 else :
-                    driver.get("https://haneul.wiki/raw/%s?rev=%d" % (i, lastest_version))
+                    driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version))
                     time.sleep(0.5)
                     lastest_doc = get_doc_text()
                     for k in vandalism :
