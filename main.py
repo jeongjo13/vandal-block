@@ -108,7 +108,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
         try :
             driver.get('%s/delete/%s' % (wiki_url, doc))
             delete_reason = driver.find_element(By.XPATH,'//*[@id="logInput"]') # 문서 삭제 시 편집 요약
-        revert_reason.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 삭제 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document)) #편집 요약
+            revert_reason.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 삭제 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document)) #편집 요약
             delete_check = driver.find_element(By.XPATH,'//*[@id="agreeCheckbox"]')
             delete_check.click()
             delete_button = driver.find_element(By.XPATH, '//*[@id="submitBtn"]')
