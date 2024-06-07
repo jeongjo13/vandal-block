@@ -120,8 +120,8 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             move_document = driver.find_element(By.XPATH,'//*[@id="titleInput"]') #문서 이동 시 사용할 휴지통 문서명
             move_document.send_keys('휴지통:%s' % trashname())
             move_document_memo = driver.find_element(By.XPATH,'//*[@id="logInput"]')
-        revert_reason.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document)) #편집 요약
-        move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
+            revert_reason.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document)) #편집 요약
+            move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
             move_button.click() #문서 이동 버튼 클릭
         except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
             print("[알림] 문서를 휴지통화할 수 없습니다.")
