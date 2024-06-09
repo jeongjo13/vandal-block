@@ -31,6 +31,13 @@ def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
         try:
             time.sleep(1)
             element = driver.find_element(By.XPATH, '//*[@id="1"]')
+            thread_topic_element = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/h2/a')
+            thread_topic_element.click()
+            time.sleep(2)
+            thread_comment = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[1]/div[1]/span/textarea')
+            thread_comment.send_keys("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다. (이 댓글은 봇에 의해 작성되었습니다.)")
+            thread_comment_submit = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[2]/button')
+            thread_comment_submit.click()
             print("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다.")
             return True
         except NoSuchElementException:
