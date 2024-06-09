@@ -17,7 +17,7 @@ imitated seed 엔진 위키에서의 반달을 자동 감지하고 차단합니�
 어차피 예외 처리가 되어 있어 권한이 부족하면 해당 작업은 건너뛰기 때문에 권한 부족으로 오류가 발생할 일은 드뭅니다.
 
 # 기본 사용 방법
-코드 최상단에 wiki_username 변수, wiki_password 변수 정의하는 곳에 자신의 아이디와 비번 넣으시고 나서 main.py 실행하시면 됩니다.
+코드 최상단에 wiki_username 변수, wiki_password 변수 정의하는 곳에 자신의 아이디와 비번 넣은 후, wiki_name, wiki_url, emergency_stop_document 변수에 위키 이름, 위키 주소, 긴급 정지 토론 발제용 문서 작성 후 실행하시면 됩니다.
 
 # 추가 사용 방법
 * 반달성 키워드 추가를 하고 싶으시면 코드 중간에 vandalism 리스트에 키워드 추가하시면 됩니다.
