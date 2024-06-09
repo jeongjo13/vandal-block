@@ -1,5 +1,5 @@
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
-blocked = ["jeongjo13"]# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
+blocked = []# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 # 감지할 반달성 키워드
 vandalism = ["은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
 # 자신의 위키 로그인 아이디
@@ -31,6 +31,13 @@ def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
         try:
             time.sleep(1)
             element = driver.find_element(By.XPATH, '//*[@id="1"]')
+            thread_topic_element = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/h2/a')
+            thread_topic_element.click()
+            time.sleep(2)
+            thread_comment = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[1]/div[1]/span/textarea')
+            thread_comment.send_keys("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다. (이 댓글은 봇에 의해 작성되었습니다.)")
+            thread_comment_submit = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[2]/button')
+            thread_comment_submit.click()
             print("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다.")
             return True
         except NoSuchElementException:
@@ -186,7 +193,7 @@ def close_thread(thread) : #토론 닫기 함수
     time.sleep(1)
     new_topic = driver.find_element(By.XPATH, '//*[@id="thread-topic-form"]/input')#토론 주제 변경 입력란
     new_topic.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
-    new_topic.send_keys('.') #새 토론 주제 (강제 조치와 같은 걸로 변경하고 싶으면 이걸 수정 바람)
+    new_topic.send_keys('자동으로 휴지통화된 스레드') #새 토론 주제 (강제 조치와 같은 걸로 변경하고 싶으면 이걸 수정 바람)
     update_thread_topic_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[3]/button')
     update_thread_topic_button.click() # 토론 주제 변경 클릭
 
