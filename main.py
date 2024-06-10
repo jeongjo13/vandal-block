@@ -41,6 +41,8 @@ def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
             thread_comment_submit = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[2]/button')
             thread_comment_submit.click()
             print("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다.")
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: 긴급 정지 토론 발제용 문서 \'{emergency_stop_document}\'에 토론이 발제된 것이 확인되어 emergency_stop 함수에서 True 값을 반환합니다.")
             return True
         except NoSuchElementException:
             return False
@@ -139,16 +141,20 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
                                         name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
     return(name) #문서명 반환
 def close_edit_request(edit_request) :
-    driver.get(edit_request)
-    close_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[5]/div/span/button')
-    close_button.click()
-    time.sleep(1)
-    close_memo = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[4]/div/form/div/div[2]/input')
-    close_memo.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 편집 요청 닫기 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document))
-    close_submit = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[4]/div/form/div/div[3]/button[1]')
-    close_submit.click()
-    now = datetime.now()
-    log.write(f"\n{datetime.now()}: {edit_request} 편집 요청 닫기.")
+    try :
+        driver.get(edit_request)
+        close_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[5]/div/span/button')
+        close_button.click()
+        time.sleep(1)
+        close_memo = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[4]/div/form/div/div[2]/input')
+        close_memo.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 편집 요청 닫기 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document))
+        close_submit = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[4]/div/form/div/div[3]/button[1]')
+        close_submit.click()
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: {edit_request} 편집 요청 닫기.")
+    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) :
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: {edit_request} 편집 요청 닫기 실패.")
 
 def revert(doc, rev) : #반달성 편집 되돌리는 함수
     rev = rev - 1
@@ -216,25 +222,32 @@ def check_thread_user(thread) :
         return(thread_user) #토론 발제자 값 반환
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) :
         print("[오류!] 토론 발제자를 식별하지 못했습니다.")
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 반달성 주제를 가진 토론 {thread}의 발제자를 식별할 수 없습니다.")
 
 def close_thread(thread) : #토론 닫기 함수
-    driver.get(thread)
-    close_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/button') #토론 상태 변경에서 '변경' 버튼
-    close_button.click()
-    time.sleep(1)
-    new_document = driver.find_element(By.XPATH, '//*[@id="thread-document-form"]/input') #토론 문서 변경에서 토론 문서를 '휴지통:토론 휴지통'으로
-    new_document.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
-    new_document.send_keys('휴지통:토론 휴지통')
-    update_thread_document_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[2]/button')
-    update_thread_document_button.click() #토론 문서 변경 버튼 클릭
-    time.sleep(1)
-    new_topic = driver.find_element(By.XPATH, '//*[@id="thread-topic-form"]/input')#토론 주제 변경 입력란
-    new_topic.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
-    new_topic.send_keys('자동으로 휴지통화된 스레드') #새 토론 주제 (강제 조치와 같은 걸로 변경하고 싶으면 이걸 수정 바람)
-    update_thread_topic_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[3]/button')
-    update_thread_topic_button.click() # 토론 주제 변경 클릭
-    now = datetime.now()
-    log.write(f"\n{datetime.now()}: 토론 휴지통화 완료. 휴지통화된 토론은 {thread}입니다.")
+    try :
+        driver.get(thread)
+        close_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/button') #토론 상태 변경에서 '변경' 버튼
+        close_button.click()
+        time.sleep(1)
+        new_document = driver.find_element(By.XPATH, '//*[@id="thread-document-form"]/input') #토론 문서 변경에서 토론 문서를 '휴지통:토론 휴지통'으로
+        new_document.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
+        new_document.send_keys('휴지통:토론 휴지통')
+        update_thread_document_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[2]/button')
+        update_thread_document_button.click() #토론 문서 변경 버튼 클릭
+        time.sleep(1)
+        new_topic = driver.find_element(By.XPATH, '//*[@id="thread-topic-form"]/input')#토론 주제 변경 입력란
+        new_topic.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
+        new_topic.send_keys('자동으로 휴지통화된 스레드') #새 토론 주제 (강제 조치와 같은 걸로 변경하고 싶으면 이걸 수정 바람)
+        update_thread_topic_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[3]/button')
+        update_thread_topic_button.click() # 토론 주제 변경 클릭
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 토론 휴지통화 완료. 휴지통화된 토론은 {thread}입니다.")
+    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) :
+        print("[오류!] 토론 휴지통화 중 오류가 발생했습니다.")
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 토론 휴지통화 중 오류 발생. 오류가 발생한 토론은 {thread}입니다.")
 
 # Chrome WebDriver 초기화
 driver = webdriver.Chrome()
@@ -314,6 +327,8 @@ while True :
                 trash(i)
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 변경의 새 문서 탭을 검토할 수 없습니다.")
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: [오류!] 최근 변경의 새 문서 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
     if emergency_stop() == True :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지")
@@ -379,6 +394,8 @@ while True :
             time.sleep(0.01)
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 변경의 전체 탭을 검토할 수 없습니다.")
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: [오류!] 최근 변경의 전체 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
     if emergency_stop() == True :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지")
@@ -415,6 +432,8 @@ while True :
                     close_thread(j)
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 토론을 검토할 수 없습니다.")
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: [오류!] 최근 토론의 열린 토론 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
     #최근 편집 요청 검토
     try :
         driver.get(f"{wiki_url}/RecentDiscuss?logtype=open_editrequest")
@@ -467,3 +486,8 @@ while True :
                         break
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 편집 요청을 검토할 수 없습니다.")
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: [오류!] 최근 토론의 열린 편집 요청 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
+
+now = datetime.now()
+log.write(f"\n{datetime.now()}: 코드의 마지막 줄이 성공적으로 실행되었습니다. 이 메시지는 주로 사용자 토론으로 인해 봇이 긴급 정지되는 경우 표시됩니다.")
