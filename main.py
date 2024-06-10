@@ -223,7 +223,7 @@ def check_thread_user(thread) :
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) :
         print("[오류!] 토론 발제자를 식별하지 못했습니다.")
         now = datetime.now()
-        log.write(f"\n{datetime.now()}: 반달성 주제를 가진 토론 {thread}의 발제자를 식별할 수 없습니다.")
+        log.write(f"\n{datetime.now()}: 반달성 주제를 가진 토론 {thread}의 발제자를 식별할 수 없습니다. 일반적으로 이 오류는 토론 로딩이 아직 완료되지 않은 경우에 표시됩니다.")
 
 def close_thread(thread) : #토론 닫기 함수
     try :
