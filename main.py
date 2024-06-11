@@ -252,30 +252,40 @@ def close_thread(thread) : #토론 닫기 함수
 # Chrome WebDriver 초기화
 driver = webdriver.Chrome()
 
-# 크롬 드라이버에 URL 주소 넣고 실행
-driver.get("{}/member/login?redirect=%2Faclgroup".format(wiki_url))
-time.sleep(2.5)  # 페이지가 완전히 로딩되도록 2.5초 동안 기다림
+login_success = False
 
-# 아이디 입력
-username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[1]/input')
-username.send_keys(wiki_username)
-time.sleep(0.5)
+while login_success == False :
+    try :
+        # 크롬 드라이버에 URL 주소 넣고 실행
+        driver.get("{}/member/login?redirect=%2Faclgroup".format(wiki_url))
+        time.sleep(2.5)  # 페이지가 완전히 로딩되도록 2.5초 동안 기다림
 
-# 비밀번호 입력
-password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[2]/input')
-password.send_keys(wiki_password)
-time.sleep(0.5)
+        # 아이디 입력
+        username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[1]/input')
+        username.send_keys(wiki_username)
+        time.sleep(0.5)
 
-auto_login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[3]/label/input')
-auto_login_button.click()
+        # 비밀번호 입력
+        password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[2]/input')
+        password.send_keys(wiki_password)
+        time.sleep(0.5)
 
-# 로그인 버튼 클릭
-login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/button')
-login_button.click()
-time.sleep(1)
+        auto_login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[3]/label/input')
+        auto_login_button.click()
+
+        # 로그인 버튼 클릭
+        login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/button')
+        login_button.click()
+        time.sleep(1)
+
+        login_success = True
+    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) :
+        print("[오류!] 로그인에 실패했습니다.")
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 로그인 실패. 다시 시도하세요.")
 
 now = datetime.now()
-log.write(f"\n{datetime.now()}: 로그인 버튼 클릭 완료")
+log.write(f"\n{datetime.now()}: 로그인 성공.")
 
 document_names = []
 while True :
