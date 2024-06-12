@@ -365,6 +365,10 @@ while True :
             if href.startswith('/w/') and link.text.strip():
                 document_names.append(link.text.strip())
         num = 0
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 최근 편집된 문서: {edited_document}")
+        log.write(f"\n{datetime.now()}: 최근 문서를 편집한 사용자: {edited_user}")
+
         for i,j in zip(edited_document,edited_user) :
             driver.get('%s/history/%s' % (wiki_url, i))
             time.sleep(0.5)
@@ -435,6 +439,10 @@ while True :
         print(thread_url)
         print(thread_text)
 
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주소: {thread_url}")
+        log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주제: {thread_text}")
+
         for i,j in zip(thread_text,thread_url) :
             for k in vandalism :
                 if k in i :
@@ -467,6 +475,9 @@ while True :
                 edit_request_text.append(text)
         print(edit_request_url)
         print(edit_request_text)
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 최근 생성 또는 편집된 편집 요청 상세 주소: {edit_request_url}")
+        log.write(f"\n{datetime.now()}: 최근 생성 또는 편집된 편집 요청 간단 주소: {edit_request_text}")
         for i, j in zip(edit_request_url, edit_request_text):
             driver.get(i)
             edit_request_document_link = driver.find_element(By.XPATH, '//*[@id="main_title"]/a')
