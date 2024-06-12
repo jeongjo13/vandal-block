@@ -2,6 +2,8 @@
 
 **warning! We are not responsible for any damage resulting from the use of this program.**
 
+**주의! 이 프로그램은 서버에 무리를 줄 수 있습니다.**
+
 # 프로그램 설명
 하늘위키에서 jeongjo13이 사용하는 반달 자동 차단 봇 코드입니다. 하늘위키에서 사용되는 브랜치는 canary입니다.
 
