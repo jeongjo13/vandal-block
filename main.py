@@ -390,6 +390,12 @@ while True :
                                 block(i, j, lastest_version)
                                 revert(i, lastest_version)
                                 break
+                    cnt1 = lastest_doc.count("[include(")
+                    cnt2 = prev_doc.count("[include(")
+                    if cnt1 - cnt2 >= 500 :
+                        block(i, j, lastest_version)
+                        revert(i, lastest_version)
+                        break
                 else :
                     driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version))
                     time.sleep(0.5)
@@ -399,6 +405,10 @@ while True :
                             block(i, j, lastest_version)
                             trash(i)
                             break
+                    cnt = lastest_doc.count("[include(")
+                    if cnt >= 500 :
+                        block(i, j, lastest_version)
+                        trash(i)
             except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
                 print("error")
             num += 1;
