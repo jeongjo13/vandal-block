@@ -1,7 +1,7 @@
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = []# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 # 감지할 반달성 키워드
-vandalism = ["은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
+vandalism = ["시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
 # 자신의 위키 로그인 아이디
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
@@ -206,7 +206,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             log.write(f"\n{datetime.now()}: {doc} 문서 휴지통화 실패.")
 
 def trashname() : #휴지통화할 때 휴지통 문서명 반환해주는 함수
-    a = random.randrange(1000000000, 9999999999) #랜덤한 10자리 수 지정 후
+    a = random.randrange(1, 999999999999999) #랜덤한 1~25자리 수 지정 후
     return (a) #반환
 
 def check_thread(thread) : #토론 주소에서 토론 ~~~의 부분만 반환
@@ -223,7 +223,7 @@ def check_thread_user(thread) :
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) :
         print("[오류!] 토론 발제자를 식별하지 못했습니다.")
         now = datetime.now()
-        log.write(f"\n{datetime.now()}: 반달성 주제를 가진 토론 {thread}의 발제자를 식별할 수 없습니다. 일반적으로 이 오류는 토론 로딩이 아직 완료되지 않은 경우에 표시됩니다.")
+        log.write(f"\n{datetime.now()}: 반달성 주제를 가진 토론 {thread}의 발제자를 식별할 수 없습니다. 일반적으로 이 오류는 토론 로딩이 아직 완료되지 않았거나 토론에 많은 텍스트가 도배된 경우에 표시됩니다.")
 
 def close_thread(thread) : #토론 닫기 함수
     try :
