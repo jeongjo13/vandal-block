@@ -79,7 +79,6 @@ def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
         option3.send_keys("토론 %s #%d 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (thread, comment_number, wiki_name, emergency_stop_document))
-        option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
         add_block = driver.find_element(By.CSS_SELECTOR,'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button')  # ACLGroup 창의 추가 버튼
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
@@ -208,7 +207,7 @@ def check_thread_user(thread) :
     driver.get(thread)
     time.sleep(10) #토론 로딩 완료까지 기다림
     try :
-        thread_user_text = driver.find_element(By.XPATH, '//*[@id="res-container"]/div[1]/div/div[1]/a') #1번 댓글 작성자 식별
+        thread_user_text = driver.find_element(By.CSS_SELECTOR, '#res-container > div > div > div.r-head.first-author > a') #1번 댓글 작성자 식별
         thread_user = thread_user_text.text
         return(thread_user) #토론 발제자 값 반환
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) :
@@ -219,19 +218,22 @@ def check_thread_user(thread) :
 def close_thread(thread) : #토론 닫기 함수
     try :
         driver.get(thread)
-        close_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/button') #토론 상태 변경에서 '변경' 버튼
+        parent_element_close = driver.find_element(By.ID, 'thread-status-form')
+        close_button = parent_element_close.find_element(By.ID, 'changeBtn') #토론 상태 변경에서 '변경' 버튼
         close_button.click()
         time.sleep(1)
-        new_document = driver.find_element(By.XPATH, '//*[@id="thread-document-form"]/input') #토론 문서 변경에서 토론 문서를 '휴지통:토론 휴지통'으로
+        parent_element_document = driver.find_element(By.ID, 'thread-document-form')
+        new_document = parent_element_document.find_element(By.NAME, 'document') #토론 문서 변경에서 토론 문서를 '휴지통:토론 휴지통'으로
         new_document.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
         new_document.send_keys('휴지통:토론 휴지통')
-        update_thread_document_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[2]/button')
+        update_thread_document_button = parent_element_document.find_element(By.ID, 'changeBtn')
         update_thread_document_button.click() #토론 문서 변경 버튼 클릭
         time.sleep(1)
-        new_topic = driver.find_element(By.XPATH, '//*[@id="thread-topic-form"]/input')#토론 주제 변경 입력란
+        parent_element_topic = driver.find_element(By.ID, 'thread-topic-form')
+        new_topic = parent_element_topic.find_element(By.NAME, 'topic')#토론 주제 변경 입력란
         new_topic.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
         new_topic.send_keys('자동으로 휴지통화된 스레드') #새 토론 주제 (강제 조치와 같은 걸로 변경하고 싶으면 이걸 수정 바람)
-        update_thread_topic_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[3]/button')
+        update_thread_topic_button = parent_element_topic.find_element(By.ID, 'changeBtn')
         update_thread_topic_button.click() # 토론 주제 변경 클릭
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 토론 휴지통화 완료. 휴지통화된 토론은 {thread}입니다.")
@@ -415,7 +417,6 @@ while True :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지")
         break
-    '''
     #최근 토론에서 반달성 제목을 가진 토론 추출 및 차단
     try :
         driver.get("%s/RecentDiscuss" % wiki_url)
@@ -454,6 +455,7 @@ while True :
         print("[오류!] 최근 토론을 검토할 수 없습니다.")
         now = datetime.now()
         log.write(f"\n{datetime.now()}: [오류!] 최근 토론의 열린 토론 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
+    '''
     #최근 편집 요청 검토
     try :
         driver.get(f"{wiki_url}/RecentDiscuss?logtype=open_editrequest")
