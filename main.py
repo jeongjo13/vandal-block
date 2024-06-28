@@ -1,7 +1,7 @@
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = []# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 # 감지할 반달성 키워드
-vandalism = ["시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
+vandalism = ["시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby"]
 # 자신의 위키 로그인 아이디
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
@@ -53,18 +53,15 @@ def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
 def block(document_, blocking, rev) : #문서 편집으로 인한 차단 시 차단하는 함수
     if blocking not in blocked :
         driver.get("%s/aclgroup?group=차단된 사용자" % wiki_url)
-        option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
+        option1 = driver.find_element(By.ID,'modeSelect') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown1 = Select(option1)
         dropdown1.select_by_value("username")
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
         option3.send_keys("%s r%d 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (block_memo(document_), rev, wiki_name, emergency_stop_document))
-        option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
-        dropdown2 = Select(option4)
-        dropdown2.select_by_value("0")
         time.sleep(0.05)
-        add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
+        add_block = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button') #ACLGroup 창의 추가 버튼
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
         now = datetime.now()
@@ -83,10 +80,7 @@ def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
         option3.send_keys("토론 %s #%d 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (thread, comment_number, wiki_name, emergency_stop_document))
         option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
-        dropdown2 = Select(option4)
-        dropdown2.select_by_value("0")
-        time.sleep(0.05)
-        add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
+        add_block = driver.find_element(By.CSS_SELECTOR,'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button')  # ACLGroup 창의 추가 버튼
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
         now = datetime.now()
@@ -109,10 +103,7 @@ def block_edit_request(blocking, edit_request_url) :
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
         option3.send_keys("%s 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (edit_request_url, wiki_name, emergency_stop_document))
         option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
-        dropdown2 = Select(option4)
-        dropdown2.select_by_value("0")
-        time.sleep(0.05)
-        add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
+        add_block = driver.find_element(By.CSS_SELECTOR,'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button')  # ACLGroup 창의 추가 버튼
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
         now = datetime.now()
@@ -161,9 +152,9 @@ def revert(doc, rev) : #반달성 편집 되돌리는 함수
     driver.get("%s/revert/%s?rev=%s" % (wiki_url, doc, rev)) #해당 문서의 정상적인 리비전으로 되돌리는 페이지에 접속
     try :
         time.sleep(0.5)
-        revert_reason = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/input')
+        revert_reason = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form > input')
         revert_reason.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 되돌리기 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document)) #편집 요약
-        revert_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div/button')
+        revert_button = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form > div > button')
         revert_button.click() #되돌리기 클릭
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 되돌리기: {doc} 문서 r{rev}로 되돌리기.")
@@ -196,7 +187,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             move_document.send_keys('휴지통:%s' % temp_trash_name)
             move_document_memo = driver.find_element(By.XPATH,'//*[@id="logInput"]')
             move_document_memo.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document)) #편집 요약
-            move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
+            move_button = driver.find_element(By.CSS_SELECTOR,'#moveForm > div:nth-child(4) > button')
             move_button.click() #문서 이동 버튼 클릭
             now = datetime.now()
             log.write(f"\n{datetime.now()}: {doc} 문서 휴지통화 완료. 새 문서명은 {temp_trash_name}입니다.")
@@ -373,7 +364,7 @@ while True :
             driver.get('%s/history/%s' % (wiki_url, i))
             time.sleep(0.5)
             try :
-                version = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/ul/li[1]/strong[1]')
+                version = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > ul > li:nth-child(1) > strong:nth-child(5)')
                 lastest_version = version.text  #해당 문서의 최신 리비전
                 lastest_version = lastest_version[1:]
                 lastest_version = int(lastest_version)
@@ -424,6 +415,7 @@ while True :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지")
         break
+        '''
     #최근 토론에서 반달성 제목을 가진 토론 추출 및 차단
     try :
         driver.get("%s/RecentDiscuss" % wiki_url)
@@ -519,6 +511,7 @@ while True :
         print("[오류!] 최근 편집 요청을 검토할 수 없습니다.")
         now = datetime.now()
         log.write(f"\n{datetime.now()}: [오류!] 최근 토론의 열린 편집 요청 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
+        '''
 
 now = datetime.now()
 log.write(f"\n{datetime.now()}: 코드의 마지막 줄이 성공적으로 실행되었습니다. 이 메시지는 주로 사용자 토론으로 인해 봇이 긴급 정지되는 경우 표시됩니다.")
