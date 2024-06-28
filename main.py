@@ -334,6 +334,7 @@ while True :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지")
         break
+        '''
     # 문서 변경사항 검토
     # RecentChanges 페이지로 이동
     try :
@@ -415,7 +416,6 @@ while True :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지")
         break
-        '''
     #최근 토론에서 반달성 제목을 가진 토론 추출 및 차단
     try :
         driver.get("%s/RecentDiscuss" % wiki_url)
