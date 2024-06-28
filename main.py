@@ -114,7 +114,7 @@ def block_edit_request(blocking, edit_request_url) :
 
 
 def get_doc_text() : #문서 RAW 읽어오는 함수
-    doc_text_field = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/textarea')
+    doc_text_field = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > textarea')
     doc_text = doc_text_field.text #문서 RAW 란에 있는 내용 읽어오기
     return doc_text #문서 RAW 반환
 
@@ -334,7 +334,6 @@ while True :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지")
         break
-        '''
     # 문서 변경사항 검토
     # RecentChanges 페이지로 이동
     try :
@@ -362,12 +361,12 @@ while True :
         log.write(f"\n{datetime.now()}: 최근 문서를 편집한 사용자: {edited_user}")
 
         for i,j in zip(edited_document,edited_user) :
-            driver.get('%s/history/%s' % (wiki_url, i))
+            driver.get('%s/raw/%s' % (wiki_url, i))
             time.sleep(0.5)
             try :
-                version = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > ul > li:nth-child(1) > strong:nth-child(5)')
+                version = driver.find_element(By.CSS_SELECTOR, '#main_title > small')
                 lastest_version = version.text  #해당 문서의 최신 리비전
-                lastest_version = lastest_version[1:]
+                lastest_version = lastest_version[2:-5]
                 lastest_version = int(lastest_version)
                 if lastest_version > 1 :
                     driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version))
@@ -416,6 +415,7 @@ while True :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지")
         break
+    '''
     #최근 토론에서 반달성 제목을 가진 토론 추출 및 차단
     try :
         driver.get("%s/RecentDiscuss" % wiki_url)
