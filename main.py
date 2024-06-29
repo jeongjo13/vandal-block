@@ -33,17 +33,25 @@ def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
         try:
             time.sleep(1)
             element = driver.find_element(By.XPATH, '//*[@id="1"]')
-            thread_topic_element = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/h2/a')
-            thread_topic_element.click()
-            time.sleep(2)
-            thread_comment = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[1]/div[1]/span/textarea')
-            thread_comment.send_keys("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다. (이 댓글은 봇에 의해 작성되었습니다.)")
-            thread_comment_submit = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[2]/button')
-            thread_comment_submit.click()
-            print("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다.")
-            now = datetime.now()
-            log.write(f"\n{datetime.now()}: 긴급 정지 토론 발제용 문서 \'{emergency_stop_document}\'에 토론이 발제된 것이 확인되어 emergency_stop 함수에서 True 값을 반환합니다.")
-            return True
+            try :
+                thread_topic_element = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/h2/a')
+                thread_topic_element.click()
+                time.sleep(2)
+                thread_comment = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[1]/div[1]/span/textarea')
+                thread_comment.send_keys("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다. (이 댓글은 봇에 의해 작성되었습니다.)")
+                thread_comment_submit = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[2]/button')
+                thread_comment_submit.click()
+                print("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다.")
+                now = datetime.now()
+                log.write(f"\n{datetime.now()}: 긴급 정지 토론 발제용 문서 \'{emergency_stop_document}\'에 토론이 발제된 것이 확인되어 emergency_stop 함수에서 True 값을 반환합니다.")
+                return True
+            except NoSuchElementException :
+                now = datetime.now()
+                log.write(f"\n{datetime.now()}: 긴급 정지 토론 발제용 문서 \'{emergency_stop_document}\'에 토론이 발제된 것이 확인되어 긴급 정지한다는 댓글을 작성하려 하였으나 실패했습니다.")
+                print("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다.")
+                now = datetime.now()
+                log.write(f"\n{datetime.now()}: 긴급 정지 토론 발제용 문서 \'{emergency_stop_document}\'에 토론이 발제된 것이 확인되어 emergency_stop 함수에서 True 값을 반환합니다.")
+                return True
         except NoSuchElementException:
             return False
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
@@ -127,7 +135,8 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
                             if not name.startswith("위키관리:") :
                                 if not name.startswith("위키운영:") :
                                     if not name.startswith("가상위키:") :
-                                        name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
+                                        if not name.startswith("사용자:") : 
+                                            name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
     return(name) #문서명 반환
 def close_edit_request(edit_request) :
     try :
