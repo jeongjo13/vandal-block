@@ -101,7 +101,6 @@ def block_edit_request(blocking, edit_request_url) :
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
         option3.send_keys("%s 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (edit_request_url, wiki_name, emergency_stop_document))
-        option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
         add_block = driver.find_element(By.CSS_SELECTOR,'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button')  # ACLGroup 창의 추가 버튼
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
@@ -133,12 +132,12 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
 def close_edit_request(edit_request) :
     try :
         driver.get(edit_request)
-        close_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[5]/div/span/button')
+        close_button = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > div.card > div > span > button')
         close_button.click()
         time.sleep(1)
-        close_memo = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[4]/div/form/div/div[2]/input')
+        close_memo = driver.find_element(By.CSS_SELECTOR, '#edit-request-close-form > div > div.modal-body > input[type=text]')
         close_memo.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 편집 요청 닫기 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document))
-        close_submit = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[4]/div/form/div/div[3]/button[1]')
+        close_submit = driver.find_element(By.CSS_SELECTOR, '#edit-request-close-form > div > div.modal-footer > button.btn.btn-primary')
         close_submit.click()
         now = datetime.now()
         log.write(f"\n{datetime.now()}: {edit_request} 편집 요청 닫기.")
@@ -455,7 +454,6 @@ while True :
         print("[오류!] 최근 토론을 검토할 수 없습니다.")
         now = datetime.now()
         log.write(f"\n{datetime.now()}: [오류!] 최근 토론의 열린 토론 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
-    '''
     #최근 편집 요청 검토
     try :
         driver.get(f"{wiki_url}/RecentDiscuss?logtype=open_editrequest")
@@ -487,7 +485,7 @@ while True :
             edit_request_document_link = driver.find_element(By.XPATH, '//*[@id="main_title"]/a')
             edit_request_document = edit_request_document_link.text
             #해당 편집 요청의 기준판 알아내기
-            version = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[2]')
+            version = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > div:nth-child(4)')
             lastest_version = version.text  # 해당 문서의 최신 리비전
             lastest_version = lastest_version[6:]
             lastest_version = int(lastest_version)
@@ -497,10 +495,10 @@ while True :
             lastest_doc = get_doc_text()
 
             driver.get(i)
-            edit_request_diff_element = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[6]/div[1]/table/tbody')
+            edit_request_diff_element = driver.find_element(By.CSS_SELECTOR, '#edit > table')
             edit_request_diff = edit_request_diff_element.text
 
-            edit_request_user_text = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/h3/a')
+            edit_request_user_text = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > h3 > a')
             edit_request_user = edit_request_user_text.text
 
             for k in vandalism:
@@ -513,7 +511,6 @@ while True :
         print("[오류!] 최근 편집 요청을 검토할 수 없습니다.")
         now = datetime.now()
         log.write(f"\n{datetime.now()}: [오류!] 최근 토론의 열린 편집 요청 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
-        '''
 
 now = datetime.now()
 log.write(f"\n{datetime.now()}: 코드의 마지막 줄이 성공적으로 실행되었습니다. 이 메시지는 주로 사용자 토론으로 인해 봇이 긴급 정지되는 경우 표시됩니다.")
