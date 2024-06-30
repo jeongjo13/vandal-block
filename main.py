@@ -1,7 +1,7 @@
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = []# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 # 감지할 반달성 키워드
-vandalism = ["은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆"]
+vandalism = ["sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby"]
 # 자신의 위키 로그인 아이디
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
@@ -33,17 +33,25 @@ def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
         try:
             time.sleep(1)
             element = driver.find_element(By.XPATH, '//*[@id="1"]')
-            thread_topic_element = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/h2/a')
-            thread_topic_element.click()
-            time.sleep(2)
-            thread_comment = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[1]/div[1]/span/textarea')
-            thread_comment.send_keys("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다. (이 댓글은 봇에 의해 작성되었습니다.)")
-            thread_comment_submit = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[2]/button')
-            thread_comment_submit.click()
-            print("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다.")
-            now = datetime.now()
-            log.write(f"\n{datetime.now()}: 긴급 정지 토론 발제용 문서 \'{emergency_stop_document}\'에 토론이 발제된 것이 확인되어 emergency_stop 함수에서 True 값을 반환합니다.")
-            return True
+            try :
+                thread_topic_element = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/h2/a')
+                thread_topic_element.click()
+                time.sleep(2)
+                thread_comment = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[1]/div[1]/span/textarea')
+                thread_comment.send_keys("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다. (이 댓글은 봇에 의해 작성되었습니다.)")
+                thread_comment_submit = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[4]/div[2]/button')
+                thread_comment_submit.click()
+                print("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다.")
+                now = datetime.now()
+                log.write(f"\n{datetime.now()}: 긴급 정지 토론 발제용 문서 \'{emergency_stop_document}\'에 토론이 발제된 것이 확인되어 emergency_stop 함수에서 True 값을 반환합니다.")
+                return True
+            except NoSuchElementException :
+                now = datetime.now()
+                log.write(f"\n{datetime.now()}: 긴급 정지 토론 발제용 문서 \'{emergency_stop_document}\'에 토론이 발제된 것이 확인되어 긴급 정지한다는 댓글을 작성하려 하였으나 실패했습니다.")
+                print("[알림] 사용자 토론에 의해 봇을 긴급 정지합니다.")
+                now = datetime.now()
+                log.write(f"\n{datetime.now()}: 긴급 정지 토론 발제용 문서 \'{emergency_stop_document}\'에 토론이 발제된 것이 확인되어 emergency_stop 함수에서 True 값을 반환합니다.")
+                return True
         except NoSuchElementException:
             return False
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
@@ -53,18 +61,15 @@ def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
 def block(document_, blocking, rev) : #문서 편집으로 인한 차단 시 차단하는 함수
     if blocking not in blocked :
         driver.get("%s/aclgroup?group=차단된 사용자" % wiki_url)
-        option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
+        option1 = driver.find_element(By.ID,'modeSelect') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown1 = Select(option1)
         dropdown1.select_by_value("username")
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
         option3.send_keys("%s r%d 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (block_memo(document_), rev, wiki_name, emergency_stop_document))
-        option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
-        dropdown2 = Select(option4)
-        dropdown2.select_by_value("0")
         time.sleep(0.05)
-        add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
+        add_block = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button') #ACLGroup 창의 추가 버튼
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
         now = datetime.now()
@@ -82,11 +87,7 @@ def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
         option3.send_keys("토론 %s #%d 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (thread, comment_number, wiki_name, emergency_stop_document))
-        option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
-        dropdown2 = Select(option4)
-        dropdown2.select_by_value("0")
-        time.sleep(0.05)
-        add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
+        add_block = driver.find_element(By.CSS_SELECTOR,'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button')  # ACLGroup 창의 추가 버튼
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
         now = datetime.now()
@@ -108,11 +109,7 @@ def block_edit_request(blocking, edit_request_url) :
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
         option3.send_keys("%s 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (edit_request_url, wiki_name, emergency_stop_document))
-        option4 = driver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[3]/select') #ACLGroup 창의 기간 선택란
-        dropdown2 = Select(option4)
-        dropdown2.select_by_value("0")
-        time.sleep(0.05)
-        add_block = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/div[4]/button') #ACLGroup 창의 추가 버튼
+        add_block = driver.find_element(By.CSS_SELECTOR,'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button')  # ACLGroup 창의 추가 버튼
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
         now = datetime.now()
@@ -123,7 +120,7 @@ def block_edit_request(blocking, edit_request_url) :
 
 
 def get_doc_text() : #문서 RAW 읽어오는 함수
-    doc_text_field = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/textarea')
+    doc_text_field = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > textarea')
     doc_text = doc_text_field.text #문서 RAW 란에 있는 내용 읽어오기
     return doc_text #문서 RAW 반환
 
@@ -138,17 +135,18 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
                             if not name.startswith("위키관리:") :
                                 if not name.startswith("위키운영:") :
                                     if not name.startswith("가상위키:") :
-                                        name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
+                                        if not name.startswith("사용자:") : 
+                                            name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
     return(name) #문서명 반환
 def close_edit_request(edit_request) :
     try :
         driver.get(edit_request)
-        close_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[5]/div/span/button')
+        close_button = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > div.card > div > span > button')
         close_button.click()
         time.sleep(1)
-        close_memo = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[4]/div/form/div/div[2]/input')
+        close_memo = driver.find_element(By.CSS_SELECTOR, '#edit-request-close-form > div > div.modal-body > input[type=text]')
         close_memo.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 편집 요청 닫기 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document))
-        close_submit = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[4]/div/form/div/div[3]/button[1]')
+        close_submit = driver.find_element(By.CSS_SELECTOR, '#edit-request-close-form > div > div.modal-footer > button.btn.btn-primary')
         close_submit.click()
         now = datetime.now()
         log.write(f"\n{datetime.now()}: {edit_request} 편집 요청 닫기.")
@@ -161,9 +159,9 @@ def revert(doc, rev) : #반달성 편집 되돌리는 함수
     driver.get("%s/revert/%s?rev=%s" % (wiki_url, doc, rev)) #해당 문서의 정상적인 리비전으로 되돌리는 페이지에 접속
     try :
         time.sleep(0.5)
-        revert_reason = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/input')
+        revert_reason = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form > input')
         revert_reason.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 되돌리기 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document)) #편집 요약
-        revert_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div/button')
+        revert_button = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form > div > button')
         revert_button.click() #되돌리기 클릭
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 되돌리기: {doc} 문서 r{rev}로 되돌리기.")
@@ -196,7 +194,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             move_document.send_keys('휴지통:%s' % temp_trash_name)
             move_document_memo = driver.find_element(By.XPATH,'//*[@id="logInput"]')
             move_document_memo.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document)) #편집 요약
-            move_button = driver.find_element(By.XPATH,'//*[@id="moveForm"]/div[4]/button')
+            move_button = driver.find_element(By.CSS_SELECTOR,'#moveForm > div:nth-child(4) > button')
             move_button.click() #문서 이동 버튼 클릭
             now = datetime.now()
             log.write(f"\n{datetime.now()}: {doc} 문서 휴지통화 완료. 새 문서명은 {temp_trash_name}입니다.")
@@ -206,7 +204,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             log.write(f"\n{datetime.now()}: {doc} 문서 휴지통화 실패.")
 
 def trashname() : #휴지통화할 때 휴지통 문서명 반환해주는 함수
-    a = random.randrange(1000000000, 9999999999) #랜덤한 10자리 수 지정 후
+    a = random.randrange(1, 999999999999999) #랜덤한 1~25자리 수 지정 후
     return (a) #반환
 
 def check_thread(thread) : #토론 주소에서 토론 ~~~의 부분만 반환
@@ -217,30 +215,33 @@ def check_thread_user(thread) :
     driver.get(thread)
     time.sleep(10) #토론 로딩 완료까지 기다림
     try :
-        thread_user_text = driver.find_element(By.XPATH, '//*[@id="res-container"]/div[1]/div/div[1]/a') #1번 댓글 작성자 식별
+        thread_user_text = driver.find_element(By.CSS_SELECTOR, '#res-container > div > div > div.r-head.first-author > a') #1번 댓글 작성자 식별
         thread_user = thread_user_text.text
         return(thread_user) #토론 발제자 값 반환
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) :
         print("[오류!] 토론 발제자를 식별하지 못했습니다.")
         now = datetime.now()
-        log.write(f"\n{datetime.now()}: 반달성 주제를 가진 토론 {thread}의 발제자를 식별할 수 없습니다. 일반적으로 이 오류는 토론 로딩이 아직 완료되지 않은 경우에 표시됩니다.")
+        log.write(f"\n{datetime.now()}: 반달성 주제를 가진 토론 {thread}의 발제자를 식별할 수 없습니다. 일반적으로 이 오류는 토론 로딩이 아직 완료되지 않았거나 토론에 많은 텍스트가 도배된 경우에 표시됩니다.")
 
 def close_thread(thread) : #토론 닫기 함수
     try :
         driver.get(thread)
-        close_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[1]/button') #토론 상태 변경에서 '변경' 버튼
+        parent_element_close = driver.find_element(By.ID, 'thread-status-form')
+        close_button = parent_element_close.find_element(By.ID, 'changeBtn') #토론 상태 변경에서 '변경' 버튼
         close_button.click()
         time.sleep(1)
-        new_document = driver.find_element(By.XPATH, '//*[@id="thread-document-form"]/input') #토론 문서 변경에서 토론 문서를 '휴지통:토론 휴지통'으로
+        parent_element_document = driver.find_element(By.ID, 'thread-document-form')
+        new_document = parent_element_document.find_element(By.NAME, 'document') #토론 문서 변경에서 토론 문서를 '휴지통:토론 휴지통'으로
         new_document.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
         new_document.send_keys('휴지통:토론 휴지통')
-        update_thread_document_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[2]/button')
+        update_thread_document_button = parent_element_document.find_element(By.ID, 'changeBtn')
         update_thread_document_button.click() #토론 문서 변경 버튼 클릭
         time.sleep(1)
-        new_topic = driver.find_element(By.XPATH, '//*[@id="thread-topic-form"]/input')#토론 주제 변경 입력란
+        parent_element_topic = driver.find_element(By.ID, 'thread-topic-form')
+        new_topic = parent_element_topic.find_element(By.NAME, 'topic')#토론 주제 변경 입력란
         new_topic.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
         new_topic.send_keys('자동으로 휴지통화된 스레드') #새 토론 주제 (강제 조치와 같은 걸로 변경하고 싶으면 이걸 수정 바람)
-        update_thread_topic_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form[3]/button')
+        update_thread_topic_button = parent_element_topic.find_element(By.ID, 'changeBtn')
         update_thread_topic_button.click() # 토론 주제 변경 클릭
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 토론 휴지통화 완료. 휴지통화된 토론은 {thread}입니다.")
@@ -365,13 +366,17 @@ while True :
             if href.startswith('/w/') and link.text.strip():
                 document_names.append(link.text.strip())
         num = 0
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 최근 편집된 문서: {edited_document}")
+        log.write(f"\n{datetime.now()}: 최근 문서를 편집한 사용자: {edited_user}")
+
         for i,j in zip(edited_document,edited_user) :
-            driver.get('%s/history/%s' % (wiki_url, i))
+            driver.get('%s/raw/%s' % (wiki_url, i))
             time.sleep(0.5)
             try :
-                version = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/ul/li[1]/strong[1]')
+                version = driver.find_element(By.CSS_SELECTOR, '#main_title > small')
                 lastest_version = version.text  #해당 문서의 최신 리비전
-                lastest_version = lastest_version[1:]
+                lastest_version = lastest_version[2:-5]
                 lastest_version = int(lastest_version)
                 if lastest_version > 1 :
                     driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version))
@@ -386,6 +391,12 @@ while True :
                                 block(i, j, lastest_version)
                                 revert(i, lastest_version)
                                 break
+                    cnt1 = lastest_doc.count("[include(")
+                    cnt2 = prev_doc.count("[include(")
+                    if cnt1 - cnt2 >= 500 :
+                        block(i, j, lastest_version)
+                        revert(i, lastest_version)
+                        break
                 else :
                     driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version))
                     time.sleep(0.5)
@@ -395,6 +406,10 @@ while True :
                             block(i, j, lastest_version)
                             trash(i)
                             break
+                    cnt = lastest_doc.count("[include(")
+                    if cnt >= 500 :
+                        block(i, j, lastest_version)
+                        trash(i)
             except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
                 print("error")
             num += 1;
@@ -435,6 +450,10 @@ while True :
         print(thread_url)
         print(thread_text)
 
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주소: {thread_url}")
+        log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주제: {thread_text}")
+
         for i,j in zip(thread_text,thread_url) :
             for k in vandalism :
                 if k in i :
@@ -467,12 +486,15 @@ while True :
                 edit_request_text.append(text)
         print(edit_request_url)
         print(edit_request_text)
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 최근 생성 또는 편집된 편집 요청 상세 주소: {edit_request_url}")
+        log.write(f"\n{datetime.now()}: 최근 생성 또는 편집된 편집 요청 간단 주소: {edit_request_text}")
         for i, j in zip(edit_request_url, edit_request_text):
             driver.get(i)
             edit_request_document_link = driver.find_element(By.XPATH, '//*[@id="main_title"]/a')
             edit_request_document = edit_request_document_link.text
             #해당 편집 요청의 기준판 알아내기
-            version = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[2]')
+            version = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > div:nth-child(4)')
             lastest_version = version.text  # 해당 문서의 최신 리비전
             lastest_version = lastest_version[6:]
             lastest_version = int(lastest_version)
@@ -482,10 +504,10 @@ while True :
             lastest_doc = get_doc_text()
 
             driver.get(i)
-            edit_request_diff_element = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/div[6]/div[1]/table/tbody')
+            edit_request_diff_element = driver.find_element(By.CSS_SELECTOR, '#edit > table')
             edit_request_diff = edit_request_diff_element.text
 
-            edit_request_user_text = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/h3/a')
+            edit_request_user_text = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > h3 > a')
             edit_request_user = edit_request_user_text.text
 
             for k in vandalism:
