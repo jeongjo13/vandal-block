@@ -12,6 +12,8 @@ wiki_url = ""
 wiki_name = ""
 # 긴급 정지 토론 발제 문서
 emergency_stop_document = ""
+# 반달성 문서를 휴지통화할 이름공간
+document_trash = "휴지통"
 
 from selenium import webdriver
 from selenium.common import TimeoutException, NoSuchElementException, ElementClickInterceptedException
@@ -135,7 +137,7 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
                             if not name.startswith("위키관리:") :
                                 if not name.startswith("위키운영:") :
                                     if not name.startswith("가상위키:") :
-                                        if not name.startswith("사용자:") : 
+                                        if not name.startswith("사용자:") :
                                             name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
     return(name) #문서명 반환
 def close_edit_request(edit_request) :
@@ -191,7 +193,7 @@ def trash(doc) : #반달성 문서 휴지통화시키는 함수
             driver.get('%s/move/%s' % (wiki_url, doc))
             move_document = driver.find_element(By.XPATH,'//*[@id="titleInput"]') #문서 이동 시 사용할 휴지통 문서명
             temp_trash_name = trashname()
-            move_document.send_keys('휴지통:%s' % temp_trash_name)
+            move_document.send_keys('%s:%s' % (document_trash, temp_trash_name))
             move_document_memo = driver.find_element(By.XPATH,'//*[@id="logInput"]')
             move_document_memo.send_keys("반달 복구: 반달을 멈추시고 %s에 정상적으로 기여해 주시기 바랍니다. | 자동 휴지통화 (잘못된 경우 \'%s:문의 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다." % (wiki_name, wiki_name, emergency_stop_document)) #편집 요약
             move_button = driver.find_element(By.CSS_SELECTOR,'#moveForm > div:nth-child(4) > button')
