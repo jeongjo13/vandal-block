@@ -29,6 +29,46 @@ now = datetime.now()
 
 log = open("log.txt", 'a')
 
+def thread_get(thread_get_url) :
+    try :
+        driver.get("%s/thread/%s/1" % (wiki_url, thread_get_url))
+        time.sleep(0.4)
+
+        # 페이지 소스 가져오기
+        page_source = driver.page_source
+
+        soup = bs(page_source, 'html.parser')
+
+        # 모든 댓글 블록을 찾습니다.
+        res_wrappers = soup.find_all('div', class_='res-wrapper')
+
+        for res in res_wrappers:
+            # 댓글 번호 추출
+            comment_number = res.find('span', class_='num').text.strip()
+
+            # 작성자 추출
+            author_tag = res.find('a', href=True)
+            if author_tag:
+                author = author_tag.text.strip()
+            else:
+                author = "Unknown"
+
+            # 댓글 내용 추출
+            comment_body = res.find('div', class_='r-body').text.strip()
+
+            # 댓글 정보를 리스트에 추가
+            comments.append({
+                'number': comment_number,
+                'author': author,
+                'comment': comment_body
+            })
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 성공")
+    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+        print("[오류!] 사용자 토론 긴급 정지 여부를 검토할 수 없습니다.")
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 실패")
+
 def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
     try :
         driver.get("%s/discuss/%s" % (wiki_url, emergency_stop_document))
@@ -257,6 +297,9 @@ driver = webdriver.Chrome()
 
 login_success = False
 
+# 댓글 데이터를 저장할 리스트
+comments = []
+
 while login_success == False :
     try :
         # 크롬 드라이버에 URL 주소 넣고 실행
@@ -461,6 +504,17 @@ while True :
                 if k in i :
                     block_thread(check_thread(j), check_thread_user(j), 1)
                     close_thread(j)
+        thread_get_cnt = 0
+        for i in thread_url :
+            thread_getting_url = check_thread(i)
+            thread_get(thread_getting_url)
+            for j in comments :
+                for k in vandalism :
+                    if k in j['comment'] :
+                        block_thread(thread_getting_url, j['author'], j['number'])
+            thread_get_cnt += 1
+            if thread_get_cnt >= 5 :
+                break
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 토론을 검토할 수 없습니다.")
         now = datetime.now()
