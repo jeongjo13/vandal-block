@@ -47,12 +47,11 @@ def thread_get(thread_get_url) :
         # API 요청 보내기
         response = requests.get(api_url, headers=headers)
 
-        response = response.json()
-
         # 응답 출력
         if response.status_code == 200:
+            response = response.json()
             now = datetime.now()
-            log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 성공. json은 다음과 같습니다: {response.json()}")
+            log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 성공.")
             url_match = re.search(r"'url': '(.+?)'", response)
             tnum_match = re.search(r"'tnum': '(.+?)'", response)
 
@@ -534,18 +533,20 @@ while True :
                 if k in i :
                     block_thread(check_thread(j), check_thread_user(j), 1)
                     close_thread(j)
+                    '''
         thread_get_cnt = 0
         for i in thread_url :
             thread_getting_url = check_thread(i)
             thread_comments = thread_get(thread_getting_url)
             for j in thread_comments['comments'] :
                 for content,comment_number,comment_username in zip(j['content'], j['id'], j['name']) :
-                    for k in vandalism : 
+                    for k in vandalism :
                         if k in content :
                             block_thread(thread_getting_url, comment_username, comment_number)
             thread_get_cnt += 1
             if thread_get_cnt >= 5 :
                 break
+        '''
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 토론을 검토할 수 없습니다.")
         now = datetime.now()
