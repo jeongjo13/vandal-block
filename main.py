@@ -14,6 +14,8 @@ wiki_name = ""
 emergency_stop_document = ""
 # 반달성 문서를 휴지통화할 이름공간
 document_trash = "휴지통"
+# 자신의 api token
+api_token = ""
 
 from selenium import webdriver
 from selenium.common import TimeoutException, NoSuchElementException, ElementClickInterceptedException
@@ -24,6 +26,9 @@ from bs4 import BeautifulSoup as bs
 from selenium.webdriver.support.ui import Select
 from datetime import datetime
 import random
+import requests
+import re
+import json
 
 now = datetime.now()
 
@@ -31,39 +36,62 @@ log = open("log.txt", 'a')
 
 def thread_get(thread_get_url) :
     try :
-        driver.get("%s/thread/%s/1" % (wiki_url, thread_get_url))
-        time.sleep(0.4)
+        # API URL
+        api_url = f"https://haneul.wiki/api/thread/{thread_get_url}"
 
-        # 페이지 소스 가져오기
-        page_source = driver.page_source
+        # 요청 헤더 설정
+        headers = {
+            "Authorization": f"Bearer {api_token}"
+        }
 
-        soup = bs(page_source, 'html.parser')
+        # API 요청 보내기
+        response = requests.get(api_url, headers=headers)
 
-        # 모든 댓글 블록을 찾습니다.
-        res_wrappers = soup.find_all('div', class_='res-wrapper')
+        response = response.json()
 
-        for res in res_wrappers:
-            # 댓글 번호 추출
-            comment_number = res.find('span', class_='num').text.strip()
+        # 응답 출력
+        if response.status_code == 200:
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 성공. json은 다음과 같습니다: {response.json()}")
+            url_match = re.search(r"'url': '(.+?)'", response)
+            tnum_match = re.search(r"'tnum': '(.+?)'", response)
 
-            # 작성자 추출
-            author_tag = res.find('a', href=True)
-            if author_tag:
-                author = author_tag.text.strip()
-            else:
-                author = "Unknown"
+            url = url_match.group(1) if url_match else None
+            tnum = tnum_match.group(1) if tnum_match else None
 
-            # 댓글 내용 추출
-            comment_body = res.find('div', class_='r-body').text.strip()
+            # document와 namespace를 추출합니다.
+            document_match = re.search(r"'document': (\{.+?\}), 'url'", text, re.DOTALL)
+            document = json.loads(document_match.group(1)) if document_match else None
+            namespace = document['namespace'] if document and 'namespace' in document else None
 
-            # 댓글 정보를 리스트에 추가
-            comments.append({
-                'number': comment_number,
-                'author': author,
-                'comment': comment_body
-            })
-        now = datetime.now()
-        log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 성공")
+            # comments를 추출합니다.
+            comments_match = re.search(r"'comments': (\[.+?\])\}", text, re.DOTALL)
+            comments = json.loads(comments_match.group(1)) if comments_match else []
+
+            # name, id, content만 추출하여 새로운 리스트에 저장합니다.
+            extracted_comments = []
+            for comment in comments:
+                name = comment['username']['name'] if 'username' in comment and 'name' in comment['username'] else None
+                comment_id = comment['id'] if 'id' in comment else None
+                content = comment['content'] if 'content' in comment else None
+                extracted_comments.append({'name': name, 'id': comment_id, 'content': content})
+
+            # 추출된 데이터를 리스트에 저장합니다.
+            data_list = {
+                'url': url,
+                'tnum': tnum,
+                'document': document,
+                'namespace': namespace,
+                'comments': extracted_comments
+            }
+
+            # 결과 출력
+            return(data_list)
+        else:
+            print(f"Error: {response.status_code}")
+            print(response.text)
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 실패")
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 사용자 토론 긴급 정지 여부를 검토할 수 없습니다.")
         now = datetime.now()
@@ -178,7 +206,9 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
                                 if not name.startswith("위키운영:") :
                                     if not name.startswith("가상위키:") :
                                         if not name.startswith("사용자:") :
-                                            name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
+                                            if not name.startswith("테스트:") :
+                                                if not name.startswith("문서:") :
+                                                    name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
     return(name) #문서명 반환
 def close_edit_request(edit_request) :
     try :
@@ -507,11 +537,12 @@ while True :
         thread_get_cnt = 0
         for i in thread_url :
             thread_getting_url = check_thread(i)
-            thread_get(thread_getting_url)
-            for j in comments :
-                for k in vandalism :
-                    if k in j['comment'] :
-                        block_thread(thread_getting_url, j['author'], j['number'])
+            thread_comments = thread_get(thread_getting_url)
+            for j in thread_comments['comments'] :
+                for content,comment_number,comment_username in zip(j['content'], j['id'], j['name']) :
+                    for k in vandalism : 
+                        if k in content :
+                            block_thread(thread_getting_url, comment_username, comment_number)
             thread_get_cnt += 1
             if thread_get_cnt >= 5 :
                 break
