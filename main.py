@@ -376,6 +376,7 @@ while True :
         links = soup.find_all('a', href=True)
 
         # 문서명 추출
+        document_names.clear()
         for link in links:
             href = link.get('href')
             for link in links:
@@ -440,6 +441,16 @@ while True :
             if href.startswith('/w/') or href.startswith('/contribution/ip/'):
                 if link.text.strip():
                     document_names.append(link.text.strip())
+
+        edited_user = []
+        edited_document = []
+
+        for index, value in enumerate(document_names):
+            if index % 2 == 0:
+                edited_document.append(value)
+            else:
+                edited_user.append(value)
+
         num = 0
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 최근 편집된 문서: {edited_document}")
