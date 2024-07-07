@@ -378,8 +378,11 @@ while True :
         # 문서명 추출
         for link in links:
             href = link.get('href')
-            if href.startswith('/w/') and link.text.strip():
-                document_names.append(link.text.strip())
+            for link in links:
+                href = link.get('href')
+                if href.startswith('/w/') or href.startswith('/contribution/ip/'):
+                    if link.text.strip() :
+                        document_names.append(link.text.strip())
         try :
             document_names.remove("내 사용자 문서")
         except ValueError :
@@ -434,8 +437,9 @@ while True :
         document_names.clear()
         for link in links:
             href = link.get('href')
-            if href.startswith('/w/') and link.text.strip():
-                document_names.append(link.text.strip())
+            if href.startswith('/w/') or href.startswith('/contribution/ip/'):
+                if link.text.strip():
+                    document_names.append(link.text.strip())
         num = 0
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 최근 편집된 문서: {edited_document}")
