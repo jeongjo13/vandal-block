@@ -1,7 +1,7 @@
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = []# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 # 감지할 반달성 키워드
-vandalism = ["sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby"]
+vandalism = ["sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby", "fuck", "나 슬러가드"]
 # 자신의 위키 로그인 아이디
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
@@ -52,30 +52,27 @@ def thread_get(thread_get_url) :
             response = response.json()
             now = datetime.now()
             log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 성공.")
-            url_match = re.search(r"'url': '(.+?)'", response)
-            tnum_match = re.search(r"'tnum': '(.+?)'", response)
 
-            url = url_match.group(1) if url_match else None
-            tnum = tnum_match.group(1) if tnum_match else None
+            # 응답 데이터에서 url과 tnum 추출
+            url = response.get('url')
+            tnum = response.get('tnum')
 
-            # document와 namespace를 추출합니다.
-            document_match = re.search(r"'document': (\{.+?\}), 'url'", text, re.DOTALL)
-            document = json.loads(document_match.group(1)) if document_match else None
-            namespace = document['namespace'] if document and 'namespace' in document else None
+            # document와 namespace 추출
+            document = response.get('document', {})
+            namespace = document.get('namespace')
 
-            # comments를 추출합니다.
-            comments_match = re.search(r"'comments': (\[.+?\])\}", text, re.DOTALL)
-            comments = json.loads(comments_match.group(1)) if comments_match else []
+            # comments 추출
+            comments = response.get('comments', [])
 
-            # name, id, content만 추출하여 새로운 리스트에 저장합니다.
+            # name, id, content만 추출하여 새로운 리스트에 저장
             extracted_comments = []
             for comment in comments:
-                name = comment['username']['name'] if 'username' in comment and 'name' in comment['username'] else None
-                comment_id = comment['id'] if 'id' in comment else None
-                content = comment['content'] if 'content' in comment else None
+                name = comment.get('username', {}).get('name')
+                comment_id = comment.get('id')
+                content = comment.get('content')
                 extracted_comments.append({'name': name, 'id': comment_id, 'content': content})
 
-            # 추출된 데이터를 리스트에 저장합니다.
+            # 결과 데이터를 딕셔너리로 저장
             data_list = {
                 'url': url,
                 'tnum': tnum,
@@ -84,15 +81,15 @@ def thread_get(thread_get_url) :
                 'comments': extracted_comments
             }
 
-            # 결과 출력
-            return(data_list)
+            # 결과 반환
+            return data_list
         else:
             print(f"Error: {response.status_code}")
             print(response.text)
             now = datetime.now()
             log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 실패")
-    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print("[오류!] 사용자 토론 긴급 정지 여부를 검토할 수 없습니다.")
+    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException, TypeError) as e:
+        print("[오류!] 토론 댓글 확인 실패.")
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 실패")
 
@@ -155,7 +152,7 @@ def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
-        option3.send_keys("토론 %s #%d 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (thread, comment_number, wiki_name, emergency_stop_document))
+        option3.send_keys("토론 %s #%s 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (thread, comment_number, wiki_name, emergency_stop_document))
         add_block = driver.find_element(By.CSS_SELECTOR,'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button')  # ACLGroup 창의 추가 버튼
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
@@ -531,22 +528,20 @@ while True :
         for i,j in zip(thread_text,thread_url) :
             for k in vandalism :
                 if k in i :
-                    block_thread(check_thread(j), check_thread_user(j), 1)
+                    block_thread(check_thread(j), check_thread_user(j), '1')
                     close_thread(j)
-                    '''
         thread_get_cnt = 0
         for i in thread_url :
             thread_getting_url = check_thread(i)
             thread_comments = thread_get(thread_getting_url)
-            for j in thread_comments['comments'] :
-                for content,comment_number,comment_username in zip(j['content'], j['id'], j['name']) :
-                    for k in vandalism :
-                        if k in content :
-                            block_thread(thread_getting_url, comment_username, comment_number)
+            for j,l in zip(thread_comments['comments'],thread_comments['tnum']) :
+                for k in vandalism :
+                    if k in j['content'] :
+                        print(j['content'])
+                        block_thread(thread_getting_url, j['name'], j['id'])
             thread_get_cnt += 1
-            if thread_get_cnt >= 5 :
+            if thread_get_cnt >= 10 :
                 break
-        '''
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 토론을 검토할 수 없습니다.")
         now = datetime.now()
