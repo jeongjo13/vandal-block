@@ -34,6 +34,9 @@ now = datetime.now()
 
 log = open("log.txt", 'a')
 
+def hide_comment(tnum, number) :
+    driver.get(f"{wiki_url}/admin/thread/{tnum}/{number}/hide")
+
 def thread_get(thread_get_url) :
     try :
         # API URL
@@ -360,6 +363,9 @@ now = datetime.now()
 log.write(f"\n{datetime.now()}: 로그인 성공.")
 
 document_names = []
+edited_user = []
+edited_document = []
+
 while True :
     try :
         # RecentChanges 페이지로 이동
@@ -379,11 +385,9 @@ while True :
         document_names.clear()
         for link in links:
             href = link.get('href')
-            for link in links:
-                href = link.get('href')
-                if href.startswith('/w/') or href.startswith('/contribution/ip/'):
-                    if link.text.strip() :
-                        document_names.append(link.text.strip())
+            if href.startswith('/w/') or href.startswith('/contribution/ip/'):
+                if link.text.strip() :
+                    document_names.append(link.text.strip())
         try :
             document_names.remove("내 사용자 문서")
         except ValueError :
@@ -392,8 +396,8 @@ while True :
             log.write(f"\n{datetime.now()}: [오류!] 리스트에서 사용자 문서를 제거할 수 없습니다. 이 오류가 발생했다면 로그인이 제대로 작동하는지 확인이 필요합니다.")
         print(document_names)
 
-        edited_document = []
-        edited_user = []
+        edited_document.clear()
+        edited_user.clear()
 
         for index, value in enumerate(document_names):
             if index % 2 == 0:
@@ -442,8 +446,15 @@ while True :
                 if link.text.strip():
                     document_names.append(link.text.strip())
 
-        edited_user = []
-        edited_document = []
+        try:
+            document_names.remove("내 사용자 문서")
+        except ValueError:
+            print("[오류!] 리스트에서 사용자 문서를 제거할 수 없습니다.")
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: [오류!] 리스트에서 사용자 문서를 제거할 수 없습니다. 이 오류가 발생했다면 로그인이 제대로 작동하는지 확인이 필요합니다.")
+
+        edited_user.clear()
+        edited_document.clear()
 
         for index, value in enumerate(document_names):
             if index % 2 == 0:
@@ -554,6 +565,7 @@ while True :
                     if k in j['content'] :
                         print(j['content'])
                         block_thread(thread_getting_url, j['name'], j['id'])
+                        hide_comment(l, j['id'])
             thread_get_cnt += 1
             if thread_get_cnt >= 10 :
                 break
