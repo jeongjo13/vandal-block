@@ -1,7 +1,7 @@
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = []# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 # 감지할 반달성 키워드
-vandalism = ["sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby"]
+vandalism = ["sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby", "fuck", "나 슬러가드"]
 # 자신의 위키 로그인 아이디
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
@@ -14,6 +14,8 @@ wiki_name = ""
 emergency_stop_document = ""
 # 반달성 문서를 휴지통화할 이름공간
 document_trash = "휴지통"
+# 자신의 api token
+api_token = ""
 
 from selenium import webdriver
 from selenium.common import TimeoutException, NoSuchElementException, ElementClickInterceptedException
@@ -24,48 +26,73 @@ from bs4 import BeautifulSoup as bs
 from selenium.webdriver.support.ui import Select
 from datetime import datetime
 import random
+import requests
+import re
+import json
 
 now = datetime.now()
 
 log = open("log.txt", 'a')
 
+def hide_comment(tnum, number) :
+    driver.get(f"{wiki_url}/admin/thread/{tnum}/{number}/hide")
+
 def thread_get(thread_get_url) :
     try :
-        driver.get("%s/thread/%s/1" % (wiki_url, thread_get_url))
-        time.sleep(0.4)
+        # API URL
+        api_url = f"https://haneul.wiki/api/thread/{thread_get_url}"
 
-        # 페이지 소스 가져오기
-        page_source = driver.page_source
+        # 요청 헤더 설정
+        headers = {
+            "Authorization": f"Bearer {api_token}"
+        }
 
-        soup = bs(page_source, 'html.parser')
+        # API 요청 보내기
+        response = requests.get(api_url, headers=headers)
 
-        # 모든 댓글 블록을 찾습니다.
-        res_wrappers = soup.find_all('div', class_='res-wrapper')
+        # 응답 출력
+        if response.status_code == 200:
+            response = response.json()
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 성공.")
 
-        for res in res_wrappers:
-            # 댓글 번호 추출
-            comment_number = res.find('span', class_='num').text.strip()
+            # 응답 데이터에서 url과 tnum 추출
+            url = response.get('url')
+            tnum = response.get('tnum')
 
-            # 작성자 추출
-            author_tag = res.find('a', href=True)
-            if author_tag:
-                author = author_tag.text.strip()
-            else:
-                author = "Unknown"
+            # document와 namespace 추출
+            document = response.get('document', {})
+            namespace = document.get('namespace')
 
-            # 댓글 내용 추출
-            comment_body = res.find('div', class_='r-body').text.strip()
+            # comments 추출
+            comments = response.get('comments', [])
 
-            # 댓글 정보를 리스트에 추가
-            comments.append({
-                'number': comment_number,
-                'author': author,
-                'comment': comment_body
-            })
-        now = datetime.now()
-        log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 성공")
-    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print("[오류!] 사용자 토론 긴급 정지 여부를 검토할 수 없습니다.")
+            # name, id, content만 추출하여 새로운 리스트에 저장
+            extracted_comments = []
+            for comment in comments:
+                name = comment.get('username', {}).get('name')
+                comment_id = comment.get('id')
+                content = comment.get('content')
+                extracted_comments.append({'name': name, 'id': comment_id, 'content': content})
+
+            # 결과 데이터를 딕셔너리로 저장
+            data_list = {
+                'url': url,
+                'tnum': tnum,
+                'document': document,
+                'namespace': namespace,
+                'comments': extracted_comments
+            }
+
+            # 결과 반환
+            return data_list
+        else:
+            print(f"Error: {response.status_code}")
+            print(response.text)
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 실패")
+    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException, TypeError) as e:
+        print("[오류!] 토론 댓글 확인 실패.")
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 실패")
 
@@ -128,7 +155,7 @@ def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
-        option3.send_keys("토론 %s #%d 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (thread, comment_number, wiki_name, emergency_stop_document))
+        option3.send_keys("토론 %s #%s 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (thread, comment_number, wiki_name, emergency_stop_document))
         add_block = driver.find_element(By.CSS_SELECTOR,'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button')  # ACLGroup 창의 추가 버튼
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
@@ -178,7 +205,9 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
                                 if not name.startswith("위키운영:") :
                                     if not name.startswith("가상위키:") :
                                         if not name.startswith("사용자:") :
-                                            name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
+                                            if not name.startswith("테스트:") :
+                                                if not name.startswith("문서:") :
+                                                    name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
     return(name) #문서명 반환
 def close_edit_request(edit_request) :
     try :
@@ -334,6 +363,9 @@ now = datetime.now()
 log.write(f"\n{datetime.now()}: 로그인 성공.")
 
 document_names = []
+edited_user = []
+edited_document = []
+
 while True :
     try :
         # RecentChanges 페이지로 이동
@@ -350,10 +382,12 @@ while True :
         links = soup.find_all('a', href=True)
 
         # 문서명 추출
+        document_names.clear()
         for link in links:
             href = link.get('href')
-            if href.startswith('/w/') and link.text.strip():
-                document_names.append(link.text.strip())
+            if href.startswith('/w/') or href.startswith('/contribution/ip/'):
+                if link.text.strip() :
+                    document_names.append(link.text.strip())
         try :
             document_names.remove("내 사용자 문서")
         except ValueError :
@@ -362,8 +396,8 @@ while True :
             log.write(f"\n{datetime.now()}: [오류!] 리스트에서 사용자 문서를 제거할 수 없습니다. 이 오류가 발생했다면 로그인이 제대로 작동하는지 확인이 필요합니다.")
         print(document_names)
 
-        edited_document = []
-        edited_user = []
+        edited_document.clear()
+        edited_user.clear()
 
         for index, value in enumerate(document_names):
             if index % 2 == 0:
@@ -408,8 +442,26 @@ while True :
         document_names.clear()
         for link in links:
             href = link.get('href')
-            if href.startswith('/w/') and link.text.strip():
-                document_names.append(link.text.strip())
+            if href.startswith('/w/') or href.startswith('/contribution/ip/'):
+                if link.text.strip():
+                    document_names.append(link.text.strip())
+
+        try:
+            document_names.remove("내 사용자 문서")
+        except ValueError:
+            print("[오류!] 리스트에서 사용자 문서를 제거할 수 없습니다.")
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: [오류!] 리스트에서 사용자 문서를 제거할 수 없습니다. 이 오류가 발생했다면 로그인이 제대로 작동하는지 확인이 필요합니다.")
+
+        edited_user.clear()
+        edited_document.clear()
+
+        for index, value in enumerate(document_names):
+            if index % 2 == 0:
+                edited_document.append(value)
+            else:
+                edited_user.append(value)
+
         num = 0
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 최근 편집된 문서: {edited_document}")
@@ -502,18 +554,20 @@ while True :
         for i,j in zip(thread_text,thread_url) :
             for k in vandalism :
                 if k in i :
-                    block_thread(check_thread(j), check_thread_user(j), 1)
+                    block_thread(check_thread(j), check_thread_user(j), '1')
                     close_thread(j)
         thread_get_cnt = 0
         for i in thread_url :
             thread_getting_url = check_thread(i)
-            thread_get(thread_getting_url)
-            for j in comments :
+            thread_comments = thread_get(thread_getting_url)
+            for j,l in zip(thread_comments['comments'],thread_comments['tnum']) :
                 for k in vandalism :
-                    if k in j['comment'] :
-                        block_thread(thread_getting_url, j['author'], j['number'])
+                    if k in j['content'] :
+                        print(j['content'])
+                        block_thread(thread_getting_url, j['name'], j['id'])
+                        hide_comment(l, j['id'])
             thread_get_cnt += 1
-            if thread_get_cnt >= 5 :
+            if thread_get_cnt >= 10 :
                 break
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 토론을 검토할 수 없습니다.")
