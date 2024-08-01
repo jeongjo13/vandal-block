@@ -1,7 +1,7 @@
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = []# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 # 감지할 반달성 키워드
-vandalism = ["sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby", "fuck", "나 슬러가드"]
+vandalism = ["지랄", "새꺄", "sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby", "fuck", "나 슬러가드"]
 # 자신의 위키 로그인 아이디
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
@@ -13,9 +13,11 @@ wiki_name = ""
 # 긴급 정지 토론 발제 문서
 emergency_stop_document = ""
 # 반달성 문서를 휴지통화할 이름공간
-document_trash = "휴지통"
+document_trash = ""
 # 자신의 api token
 api_token = ""
+# imitated seed 호환 모드
+imitated_seed = False
 
 from selenium import webdriver
 from selenium.common import TimeoutException, NoSuchElementException, ElementClickInterceptedException
@@ -297,8 +299,10 @@ def check_thread_user(thread) :
 def close_thread(thread) : #토론 닫기 함수
     try :
         driver.get(thread)
-        parent_element_close = driver.find_element(By.ID, 'thread-status-form')
-        close_button = parent_element_close.find_element(By.ID, 'changeBtn') #토론 상태 변경에서 '변경' 버튼
+        close_select = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/select')
+        dropdown1 = Select(close_select)
+        dropdown1.select_by_value("close")
+        close_button = driver.find_element(By.XPATH, '//*[@id="changeBtn"]') #토론 상태 변경에서 '변경' 버튼
         close_button.click()
         time.sleep(1)
         parent_element_document = driver.find_element(By.ID, 'thread-document-form')
@@ -336,20 +340,20 @@ while login_success == False :
         time.sleep(2.5)  # 페이지가 완전히 로딩되도록 2.5초 동안 기다림
 
         # 아이디 입력
-        username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[1]/input')
+        username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[1]/input')
         username.send_keys(wiki_username)
         time.sleep(0.5)
 
         # 비밀번호 입력
-        password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[2]/input')
+        password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[2]/input')
         password.send_keys(wiki_password)
         time.sleep(0.5)
 
-        auto_login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[3]/label/input')
+        auto_login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[3]/label/input')
         auto_login_button.click()
 
         # 로그인 버튼 클릭
-        login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/button')
+        login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/button')
         login_button.click()
         time.sleep(1)
 
@@ -554,21 +558,23 @@ while True :
         for i,j in zip(thread_text,thread_url) :
             for k in vandalism :
                 if k in i :
-                    block_thread(check_thread(j), check_thread_user(j), '1')
+                    #block_thread(check_thread(j), check_thread_user(j), '1')
                     close_thread(j)
-        thread_get_cnt = 0
-        for i in thread_url :
-            thread_getting_url = check_thread(i)
-            thread_comments = thread_get(thread_getting_url)
-            for j,l in zip(thread_comments['comments'],thread_comments['tnum']) :
-                for k in vandalism :
-                    if k in j['content'] :
-                        print(j['content'])
-                        block_thread(thread_getting_url, j['name'], j['id'])
-                        hide_comment(l, j['id'])
-            thread_get_cnt += 1
-            if thread_get_cnt >= 10 :
-                break
+        if imitated_seed == False : 
+            thread_get_cnt = 0
+            for i in thread_url :
+                thread_getting_url = check_thread(i)
+                thread_comments = thread_get(thread_getting_url)
+                for j,l in zip(thread_comments['comments'],thread_comments['tnum']) :
+                    for k in vandalism :
+                        if k in j['content'] :
+                            print(j['content'])
+                            block_thread(thread_getting_url, j['name'], j['id'])
+                            hide_comment(l, j['id'])
+                thread_get_cnt += 1
+                if thread_get_cnt >= 10 :
+                    break
+                
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 토론을 검토할 수 없습니다.")
         now = datetime.now()
