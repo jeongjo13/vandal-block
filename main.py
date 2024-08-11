@@ -13,7 +13,7 @@ wiki_name = ""
 # 긴급 정지 토론 발제 문서
 emergency_stop_document = ""
 # 반달성 문서를 휴지통화할 이름공간
-document_trash = ""
+document_trash = "휴지통"
 # 자신의 api token
 api_token = ""
 # 사용할 엔진 (imitated seed, haneul seed)
