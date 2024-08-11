@@ -13,11 +13,11 @@ wiki_name = ""
 # 긴급 정지 토론 발제 문서
 emergency_stop_document = ""
 # 반달성 문서를 휴지통화할 이름공간
-document_trash = ""
+document_trash = "휴지통"
 # 자신의 api token
 api_token = ""
-# imitated seed 호환 모드
-imitated_seed = False
+# 사용할 엔진 (imitated seed, haneul seed)
+using_engine = "imitated seed"
 
 from selenium import webdriver
 from selenium.common import TimeoutException, NoSuchElementException, ElementClickInterceptedException
@@ -560,7 +560,7 @@ while True :
                 if k in i :
                     #block_thread(check_thread(j), check_thread_user(j), '1')
                     close_thread(j)
-        if imitated_seed == False : 
+        if using_engine == "haneul seed" :
             thread_get_cnt = 0
             for i in thread_url :
                 thread_getting_url = check_thread(i)
@@ -574,7 +574,7 @@ while True :
                 thread_get_cnt += 1
                 if thread_get_cnt >= 10 :
                     break
-                
+
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
         print("[오류!] 최근 토론을 검토할 수 없습니다.")
         now = datetime.now()
