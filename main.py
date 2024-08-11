@@ -13,7 +13,7 @@ wiki_name = ""
 # 긴급 정지 토론 발제 문서
 emergency_stop_document = ""
 # 반달성 문서를 휴지통화할 이름공간
-document_trash = "휴지통"
+document_trash = ""
 # 자신의 api token
 api_token = ""
 # 사용할 엔진 (imitated seed, haneul seed)
@@ -333,29 +333,54 @@ login_success = False
 # 댓글 데이터를 저장할 리스트
 comments = []
 
+if using_engine == "haneul seed" :
+    haneulseed_continue = input("[경고!] 현재 haneul-seed 엔진에서 봇이 제대로 작동하지 않고 있으며, 치명적인 버그가 존재하므로 사용을 자제할 것이 매우 권장됩니다. 그래도 계속 진행하시겠습니까? (y/n): ")
+    if haneulseed_continue != 'y' :
+        exit(0)
+
 while login_success == False :
     try :
         # 크롬 드라이버에 URL 주소 넣고 실행
         driver.get("{}/member/login?redirect=%2Faclgroup".format(wiki_url))
         time.sleep(2.5)  # 페이지가 완전히 로딩되도록 2.5초 동안 기다림
 
-        # 아이디 입력
-        username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[1]/input')
-        username.send_keys(wiki_username)
-        time.sleep(0.5)
+        if using_engine != "haneul seed" :
+            # 아이디 입력
+            username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[1]/input')
+            username.send_keys(wiki_username)
+            time.sleep(0.5)
 
-        # 비밀번호 입력
-        password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[2]/input')
-        password.send_keys(wiki_password)
-        time.sleep(0.5)
+            # 비밀번호 입력
+            password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[2]/input')
+            password.send_keys(wiki_password)
+            time.sleep(0.5)
 
-        auto_login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[3]/label/input')
-        auto_login_button.click()
+            auto_login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[3]/label/input')
+            auto_login_button.click()
 
-        # 로그인 버튼 클릭
-        login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/button')
-        login_button.click()
-        time.sleep(1)
+            # 로그인 버튼 클릭
+            login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/button')
+            login_button.click()
+            time.sleep(1)
+        else : #하늘시드를 사용하는 경우
+            # 아이디 입력
+            username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[1]/input')
+            username.send_keys(wiki_username)
+            time.sleep(0.5)
+
+            # 비밀번호 입력
+            password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[2]/input')
+            password.send_keys(wiki_password)
+            time.sleep(0.5)
+
+            auto_login_button = driver.find_element(By.XPATH,
+                                                    '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[3]/label/input')
+            auto_login_button.click()
+
+            # 로그인 버튼 클릭
+            login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/button')
+            login_button.click()
+            time.sleep(1)
 
         login_success = True
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) :
