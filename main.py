@@ -1,7 +1,7 @@
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = []# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 # 감지할 반달성 키워드
-vandalism = ["sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby"]
+vandalism = ["지랄", "새꺄", "sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby", "fuck", "나 슬러가드"]
 # 자신의 위키 로그인 아이디
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
@@ -12,8 +12,20 @@ wiki_url = ""
 wiki_name = ""
 # 긴급 정지 토론 발제 문서
 emergency_stop_document = ""
-# 반달성 문서를 휴지통화할 이름공간
+# 반달성 문서를 휴지통화할  이름공간
 document_trash = "휴지통"
+# 자신의 api token
+api_token = ""
+# 사용할 엔진 (imitated seed, haneul seed)
+using_engine = "imitated seed"
+# 문서 제목 검토 활성화 여부
+document_name_lookup = True
+# 문서 내용 검토 활성화 여부
+document_raw_lookup = True
+# 토론 제목/내용 검토 활성화 여부 (토론 내용 검토는 haneul seed에서만 동작함)
+thread_lookup = True
+# 편집 요청 검토 활성화 여부
+edit_request_lookup = True
 
 from selenium import webdriver
 from selenium.common import TimeoutException, NoSuchElementException, ElementClickInterceptedException
@@ -24,10 +36,75 @@ from bs4 import BeautifulSoup as bs
 from selenium.webdriver.support.ui import Select
 from datetime import datetime
 import random
+import requests
+import re
+import json
 
 now = datetime.now()
 
 log = open("log.txt", 'a')
+
+def hide_comment(tnum, number) :
+    driver.get(f"{wiki_url}/admin/thread/{tnum}/{number}/hide")
+
+def thread_get(thread_get_url) :
+    try :
+        # API URL
+        api_url = f"https://haneul.wiki/api/thread/{thread_get_url}"
+
+        # 요청 헤더 설정
+        headers = {
+            "Authorization": f"Bearer {api_token}"
+        }
+
+        # API 요청 보내기
+        response = requests.get(api_url, headers=headers)
+
+        # 응답 출력
+        if response.status_code == 200:
+            response = response.json()
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 성공.")
+
+            # 응답 데이터에서 url과 tnum 추출
+            url = response.get('url')
+            tnum = response.get('tnum')
+
+            # document와 namespace 추출
+            document = response.get('document', {})
+            namespace = document.get('namespace')
+
+            # comments 추출
+            comments = response.get('comments', [])
+
+            # name, id, content만 추출하여 새로운 리스트에 저장
+            extracted_comments = []
+            for comment in comments:
+                name = comment.get('username', {}).get('name')
+                comment_id = comment.get('id')
+                content = comment.get('content')
+                extracted_comments.append({'name': name, 'id': comment_id, 'content': content})
+
+            # 결과 데이터를 딕셔너리로 저장
+            data_list = {
+                'url': url,
+                'tnum': tnum,
+                'document': document,
+                'namespace': namespace,
+                'comments': extracted_comments
+            }
+
+            # 결과 반환
+            return data_list
+        else:
+            print(f"Error: {response.status_code}")
+            print(response.text)
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 실패")
+    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException, TypeError) as e:
+        print("[오류!] 토론 댓글 확인 실패.")
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 토론 {thread_get_url}의 댓글 확인 실패")
 
 def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
     try :
@@ -88,7 +165,7 @@ def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단
         option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
         option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
-        option3.send_keys("토론 %s #%d 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (thread, comment_number, wiki_name, emergency_stop_document))
+        option3.send_keys("토론 %s #%s 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (thread, comment_number, wiki_name, emergency_stop_document))
         add_block = driver.find_element(By.CSS_SELECTOR,'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button')  # ACLGroup 창의 추가 버튼
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
@@ -138,7 +215,9 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
                                 if not name.startswith("위키운영:") :
                                     if not name.startswith("가상위키:") :
                                         if not name.startswith("사용자:") :
-                                            name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
+                                            if not name.startswith("테스트:") :
+                                                if not name.startswith("문서:") :
+                                                    name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
     return(name) #문서명 반환
 def close_edit_request(edit_request) :
     try :
@@ -228,8 +307,10 @@ def check_thread_user(thread) :
 def close_thread(thread) : #토론 닫기 함수
     try :
         driver.get(thread)
-        parent_element_close = driver.find_element(By.ID, 'thread-status-form')
-        close_button = parent_element_close.find_element(By.ID, 'changeBtn') #토론 상태 변경에서 '변경' 버튼
+        close_select = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/select')
+        dropdown1 = Select(close_select)
+        dropdown1.select_by_value("close")
+        close_button = driver.find_element(By.XPATH, '//*[@id="changeBtn"]') #토론 상태 변경에서 '변경' 버튼
         close_button.click()
         time.sleep(1)
         parent_element_document = driver.find_element(By.ID, 'thread-document-form')
@@ -257,29 +338,57 @@ driver = webdriver.Chrome()
 
 login_success = False
 
+# 댓글 데이터를 저장할 리스트
+comments = []
+
+if using_engine == "haneul seed" :
+    haneulseed_continue = input("[경고!] 현재 haneul-seed 엔진에서 봇이 제대로 작동하지 않고 있으며, 치명적인 버그가 존재하므로 사용을 자제할 것이 매우 권장됩니다. 그래도 계속 진행하시겠습니까? (y/n): ")
+    if haneulseed_continue != 'y' :
+        exit(0)
+
 while login_success == False :
     try :
         # 크롬 드라이버에 URL 주소 넣고 실행
         driver.get("{}/member/login?redirect=%2Faclgroup".format(wiki_url))
         time.sleep(2.5)  # 페이지가 완전히 로딩되도록 2.5초 동안 기다림
 
-        # 아이디 입력
-        username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[1]/input')
-        username.send_keys(wiki_username)
-        time.sleep(0.5)
+        if using_engine != "haneul seed" :
+            # 아이디 입력
+            username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[1]/input')
+            username.send_keys(wiki_username)
+            time.sleep(0.5)
 
-        # 비밀번호 입력
-        password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[2]/input')
-        password.send_keys(wiki_password)
-        time.sleep(0.5)
+            # 비밀번호 입력
+            password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[2]/input')
+            password.send_keys(wiki_password)
+            time.sleep(0.5)
 
-        auto_login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[3]/label/input')
-        auto_login_button.click()
+            auto_login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/div[3]/label/input')
+            auto_login_button.click()
 
-        # 로그인 버튼 클릭
-        login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/button')
-        login_button.click()
-        time.sleep(1)
+            # 로그인 버튼 클릭
+            login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form/button')
+            login_button.click()
+            time.sleep(1)
+        else : #하늘시드를 사용하는 경우
+            # 아이디 입력
+            username = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[1]/input')
+            username.send_keys(wiki_username)
+            time.sleep(0.5)
+
+            # 비밀번호 입력
+            password = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[2]/input')
+            password.send_keys(wiki_password)
+            time.sleep(0.5)
+
+            auto_login_button = driver.find_element(By.XPATH,
+                                                    '/html/body/div[1]/div[3]/div[2]/div[2]/form/div[3]/label/input')
+            auto_login_button.click()
+
+            # 로그인 버튼 클릭
+            login_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[2]/form/button')
+            login_button.click()
+            time.sleep(1)
 
         login_success = True
     except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) :
@@ -291,237 +400,279 @@ now = datetime.now()
 log.write(f"\n{datetime.now()}: 로그인 성공.")
 
 document_names = []
+edited_user = []
+edited_document = []
+
 while True :
-    try :
-        # RecentChanges 페이지로 이동
-        driver.get('%s/RecentChanges?logtype=create' % wiki_url)
-        time.sleep(0.4)
-
-        # 페이지 소스 가져오기
-        page_source = driver.page_source
-
-        # BeautifulSoup을 사용하여 페이지 소스를 파싱
-        soup = bs(page_source, 'html.parser')
-
-        # 최근 변경된 문서 목록 추출
-        links = soup.find_all('a', href=True)
-
-        # 문서명 추출
-        for link in links:
-            href = link.get('href')
-            if href.startswith('/w/') and link.text.strip():
-                document_names.append(link.text.strip())
+    if document_name_lookup == True :
         try :
-            document_names.remove("내 사용자 문서")
-        except ValueError :
-            print("[오류!] 리스트에서 사용자 문서를 제거할 수 없습니다.")
+            # RecentChanges 페이지로 이동
+            driver.get('%s/RecentChanges?logtype=create' % wiki_url)
+            time.sleep(0.4)
+
+            # 페이지 소스 가져오기
+            page_source = driver.page_source
+
+            # BeautifulSoup을 사용하여 페이지 소스를 파싱
+            soup = bs(page_source, 'html.parser')
+
+            # 최근 변경된 문서 목록 추출
+            links = soup.find_all('a', href=True)
+
+            # 문서명 추출
+            document_names.clear()
+            for link in links:
+                href = link.get('href')
+                if href.startswith('/w/') or href.startswith('/contribution/ip/'):
+                    if link.text.strip() :
+                        document_names.append(link.text.strip())
+            try :
+                document_names.remove("내 사용자 문서")
+            except ValueError :
+                print("[오류!] 리스트에서 사용자 문서를 제거할 수 없습니다.")
+                now = datetime.now()
+                log.write(f"\n{datetime.now()}: [오류!] 리스트에서 사용자 문서를 제거할 수 없습니다. 이 오류가 발생했다면 로그인이 제대로 작동하는지 확인이 필요합니다.")
+            print(document_names)
+
+            edited_document.clear()
+            edited_user.clear()
+
+            for index, value in enumerate(document_names):
+                if index % 2 == 0:
+                    edited_document.append(value)
+                else:
+                    edited_user.append(value)
+
+            print(edited_document)
+            print(edited_user)
             now = datetime.now()
-            log.write(f"\n{datetime.now()}: [오류!] 리스트에서 사용자 문서를 제거할 수 없습니다. 이 오류가 발생했다면 로그인이 제대로 작동하는지 확인이 필요합니다.")
-        print(document_names)
+            log.write(f"\n{datetime.now()}: 최근 생성된 문서: {edited_document}")
+            log.write(f"\n{datetime.now()}: 최근 문서를 생성한 사용자: {edited_user}")
 
-        edited_document = []
-        edited_user = []
-
-        for index, value in enumerate(document_names):
-            if index % 2 == 0:
-                edited_document.append(value)
-            else:
-                edited_user.append(value)
-
-        print(edited_document)
-        print(edited_user)
-        now = datetime.now()
-        log.write(f"\n{datetime.now()}: 최근 생성된 문서: {edited_document}")
-        log.write(f"\n{datetime.now()}: 최근 문서를 생성한 사용자: {edited_user}")
-
-        for i,j in zip(edited_document,edited_user) :
-            if any(v in i for v in vandalism):
-                block(i, j, 1)
-                trash(i)
-    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print("[오류!] 최근 변경의 새 문서 탭을 검토할 수 없습니다.")
-        now = datetime.now()
-        log.write(f"\n{datetime.now()}: [오류!] 최근 변경의 새 문서 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
+            for i,j in zip(edited_document,edited_user) :
+                if any(v in i for v in vandalism):
+                    block(i, j, 1)
+                    trash(i)
+        except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+            print("[오류!] 최근 변경의 새 문서 탭을 검토할 수 없습니다.")
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: [오류!] 최근 변경의 새 문서 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
     if emergency_stop() == True :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지")
         break
     # 문서 변경사항 검토
-    # RecentChanges 페이지로 이동
-    try :
-        driver.get('%s/RecentChanges' % wiki_url)
-        time.sleep(0.4)
+    if document_raw_lookup == True :
+        # RecentChanges 페이지로 이동
+        try :
+            driver.get('%s/RecentChanges' % wiki_url)
+            time.sleep(0.4)
 
-        # 페이지 소스 가져오기
-        page_source = driver.page_source
+            # 페이지 소스 가져오기
+            page_source = driver.page_source
 
-        # BeautifulSoup을 사용하여 페이지 소스를 파싱
-        soup = bs(page_source, 'html.parser')
+            # BeautifulSoup을 사용하여 페이지 소스를 파싱
+            soup = bs(page_source, 'html.parser')
 
-        # 최근 변경된 문서 목록 추출
-        links = soup.find_all('a', href=True)
+            # 최근 변경된 문서 목록 추출
+            links = soup.find_all('a', href=True)
 
-        # 문서명 추출
-        document_names.clear()
-        for link in links:
-            href = link.get('href')
-            if href.startswith('/w/') and link.text.strip():
-                document_names.append(link.text.strip())
-        num = 0
-        now = datetime.now()
-        log.write(f"\n{datetime.now()}: 최근 편집된 문서: {edited_document}")
-        log.write(f"\n{datetime.now()}: 최근 문서를 편집한 사용자: {edited_user}")
+            # 문서명 추출
+            document_names.clear()
+            for link in links:
+                href = link.get('href')
+                if href.startswith('/w/') or href.startswith('/contribution/ip/'):
+                    if link.text.strip():
+                        document_names.append(link.text.strip())
 
-        for i,j in zip(edited_document,edited_user) :
-            driver.get('%s/raw/%s' % (wiki_url, i))
-            time.sleep(0.5)
-            try :
-                version = driver.find_element(By.CSS_SELECTOR, '#main_title > small')
-                lastest_version = version.text  #해당 문서의 최신 리비전
-                lastest_version = lastest_version[2:-5]
-                lastest_version = int(lastest_version)
-                if lastest_version > 1 :
-                    driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version))
-                    time.sleep(0.5)
-                    lastest_doc = get_doc_text()
-                    driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version-1))
-                    time.sleep(0.5)
-                    prev_doc = get_doc_text()
-                    for k in vandalism :
-                        if k in lastest_doc :
-                            if k not in prev_doc :
+            try:
+                document_names.remove("내 사용자 문서")
+            except ValueError:
+                print("[오류!] 리스트에서 사용자 문서를 제거할 수 없습니다.")
+                now = datetime.now()
+                log.write(f"\n{datetime.now()}: [오류!] 리스트에서 사용자 문서를 제거할 수 없습니다. 이 오류가 발생했다면 로그인이 제대로 작동하는지 확인이 필요합니다.")
+
+            edited_user.clear()
+            edited_document.clear()
+
+            for index, value in enumerate(document_names):
+                if index % 2 == 0:
+                    edited_document.append(value)
+                else:
+                    edited_user.append(value)
+
+            num = 0
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: 최근 편집된 문서: {edited_document}")
+            log.write(f"\n{datetime.now()}: 최근 문서를 편집한 사용자: {edited_user}")
+
+            for i,j in zip(edited_document,edited_user) :
+                driver.get('%s/raw/%s' % (wiki_url, i))
+                time.sleep(0.5)
+                try :
+                    version = driver.find_element(By.CSS_SELECTOR, '#main_title > small')
+                    lastest_version = version.text  #해당 문서의 최신 리비전
+                    lastest_version = lastest_version[2:-5]
+                    lastest_version = int(lastest_version)
+                    if lastest_version > 1 :
+                        driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version))
+                        time.sleep(0.5)
+                        lastest_doc = get_doc_text()
+                        driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version-1))
+                        time.sleep(0.5)
+                        prev_doc = get_doc_text()
+                        for k in vandalism :
+                            if k in lastest_doc :
+                                if k not in prev_doc :
+                                    block(i, j, lastest_version)
+                                    revert(i, lastest_version)
+                                    break
+                        cnt1 = lastest_doc.count("[include(")
+                        cnt2 = prev_doc.count("[include(")
+                        if cnt1 - cnt2 >= 500 :
+                            block(i, j, lastest_version)
+                            revert(i, lastest_version)
+                            break
+                    else :
+                        driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version))
+                        time.sleep(0.5)
+                        lastest_doc = get_doc_text()
+                        for k in vandalism :
+                            if k in lastest_doc :
                                 block(i, j, lastest_version)
-                                revert(i, lastest_version)
+                                trash(i)
                                 break
-                    cnt1 = lastest_doc.count("[include(")
-                    cnt2 = prev_doc.count("[include(")
-                    if cnt1 - cnt2 >= 500 :
-                        block(i, j, lastest_version)
-                        revert(i, lastest_version)
-                        break
-                else :
-                    driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version))
-                    time.sleep(0.5)
-                    lastest_doc = get_doc_text()
-                    for k in vandalism :
-                        if k in lastest_doc :
+                        cnt = lastest_doc.count("[include(")
+                        if cnt >= 500 :
                             block(i, j, lastest_version)
                             trash(i)
-                            break
-                    cnt = lastest_doc.count("[include(")
-                    if cnt >= 500 :
-                        block(i, j, lastest_version)
-                        trash(i)
-            except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-                print("error")
-            num += 1;
-            if num >= 11 :
-                num = 0
-                break
-            time.sleep(0.01)
-    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print("[오류!] 최근 변경의 전체 탭을 검토할 수 없습니다.")
-        now = datetime.now()
-        log.write(f"\n{datetime.now()}: [오류!] 최근 변경의 전체 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
+                except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+                    print("error")
+                num += 1;
+                if num >= 11 :
+                    num = 0
+                    break
+                time.sleep(0.01)
+        except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+            print("[오류!] 최근 변경의 전체 탭을 검토할 수 없습니다.")
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: [오류!] 최근 변경의 전체 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
     if emergency_stop() == True :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지")
         break
-    #최근 토론에서 반달성 제목을 가진 토론 추출 및 차단
-    try :
-        driver.get("%s/RecentDiscuss" % wiki_url)
-        time.sleep(0.4)
+    if thread_lookup == True :
+        #최근 토론에서 반달성 제목을 가진 토론 추출 및 차단
+        try :
+            driver.get("%s/RecentDiscuss" % wiki_url)
+            time.sleep(0.4)
 
-        # 페이지 소스 가져오기
-        page_source = driver.page_source
+            # 페이지 소스 가져오기
+            page_source = driver.page_source
 
-        # BeautifulSoup을 사용하여 페이지 소스를 파싱
-        soup = bs(page_source, 'html.parser')
+            # BeautifulSoup을 사용하여 페이지 소스를 파싱
+            soup = bs(page_source, 'html.parser')
 
-        threads = []
-        thread_url = []
-        thread_text = []
+            threads = []
+            thread_url = []
+            thread_text = []
 
-        for a_tag in soup.find_all('a', href=True):
-            href = a_tag['href']
-            if href.startswith('/thread/'):
-                full_url = f"{wiki_url}{href}"
-                text = a_tag.get_text(strip=True)
-                thread_url.append(full_url)
-                thread_text.append(text)
-        print(thread_url)
-        print(thread_text)
+            for a_tag in soup.find_all('a', href=True):
+                href = a_tag['href']
+                if href.startswith('/thread/'):
+                    full_url = f"{wiki_url}{href}"
+                    text = a_tag.get_text(strip=True)
+                    thread_url.append(full_url)
+                    thread_text.append(text)
+            print(thread_url)
+            print(thread_text)
 
-        now = datetime.now()
-        log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주소: {thread_url}")
-        log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주제: {thread_text}")
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주소: {thread_url}")
+            log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주제: {thread_text}")
 
-        for i,j in zip(thread_text,thread_url) :
-            for k in vandalism :
-                if k in i :
-                    block_thread(check_thread(j), check_thread_user(j), 1)
-                    close_thread(j)
-    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print("[오류!] 최근 토론을 검토할 수 없습니다.")
-        now = datetime.now()
-        log.write(f"\n{datetime.now()}: [오류!] 최근 토론의 열린 토론 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
-    #최근 편집 요청 검토
-    try :
-        driver.get(f"{wiki_url}/RecentDiscuss?logtype=open_editrequest")
-        time.sleep(0.4)
-
-        # 페이지 소스 가져오기
-        page_source = driver.page_source
-
-        # BeautifulSoup을 사용하여 페이지 소스를 파싱
-        soup = bs(page_source, 'html.parser')
-
-        edit_request_url = []
-        edit_request_text = []
-
-        for a_tag in soup.find_all('a', href=True):
-            href = a_tag['href']
-            if href.startswith('/edit_request/'):
-                full_url = f"{wiki_url}{href}"
-                text = a_tag.get_text(strip=True)
-                edit_request_url.append(full_url)
-                edit_request_text.append(text)
-        print(edit_request_url)
-        print(edit_request_text)
-        now = datetime.now()
-        log.write(f"\n{datetime.now()}: 최근 생성 또는 편집된 편집 요청 상세 주소: {edit_request_url}")
-        log.write(f"\n{datetime.now()}: 최근 생성 또는 편집된 편집 요청 간단 주소: {edit_request_text}")
-        for i, j in zip(edit_request_url, edit_request_text):
-            driver.get(i)
-            edit_request_document_link = driver.find_element(By.XPATH, '//*[@id="main_title"]/a')
-            edit_request_document = edit_request_document_link.text
-            #해당 편집 요청의 기준판 알아내기
-            version = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > div:nth-child(4)')
-            lastest_version = version.text  # 해당 문서의 최신 리비전
-            lastest_version = lastest_version[6:]
-            lastest_version = int(lastest_version)
-            #해당 편집 요청의 기준 판 RAW 불러오기
-            driver.get("%s/raw/%s?rev=%d" % (wiki_url, edit_request_document, lastest_version))
-            time.sleep(0.5)
-            lastest_doc = get_doc_text()
-
-            driver.get(i)
-            edit_request_diff_element = driver.find_element(By.CSS_SELECTOR, '#edit > table')
-            edit_request_diff = edit_request_diff_element.text
-
-            edit_request_user_text = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > h3 > a')
-            edit_request_user = edit_request_user_text.text
-
-            for k in vandalism:
-                if k in edit_request_diff:
-                    if k not in lastest_doc :
-                        block_edit_request(edit_request_user, j)
-                        close_edit_request(i)
+            for i,j in zip(thread_text,thread_url) :
+                for k in vandalism :
+                    if k in i :
+                        #block_thread(check_thread(j), check_thread_user(j), '1')
+                        close_thread(j)
+            if using_engine == "haneul seed" :
+                thread_get_cnt = 0
+                for i in thread_url :
+                    thread_getting_url = check_thread(i)
+                    thread_comments = thread_get(thread_getting_url)
+                    for j,l in zip(thread_comments['comments'],thread_comments['tnum']) :
+                        for k in vandalism :
+                            if k in j['content'] :
+                                print(j['content'])
+                                block_thread(thread_getting_url, j['name'], j['id'])
+                                hide_comment(l, j['id'])
+                    thread_get_cnt += 1
+                    if thread_get_cnt >= 10 :
                         break
-    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
-        print("[오류!] 최근 편집 요청을 검토할 수 없습니다.")
-        now = datetime.now()
-        log.write(f"\n{datetime.now()}: [오류!] 최근 토론의 열린 편집 요청 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
+
+        except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+            print("[오류!] 최근 토론을 검토할 수 없습니다.")
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: [오류!] 최근 토론의 열린 토론 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
+    if edit_request_lookup == True :
+        #최근 편집 요청 검토
+        try :
+            driver.get(f"{wiki_url}/RecentDiscuss?logtype=open_editrequest")
+            time.sleep(0.4)
+
+            # 페이지 소스 가져오기
+            page_source = driver.page_source
+
+            # BeautifulSoup을 사용하여 페이지 소스를 파싱
+            soup = bs(page_source, 'html.parser')
+
+            edit_request_url = []
+            edit_request_text = []
+
+            for a_tag in soup.find_all('a', href=True):
+                href = a_tag['href']
+                if href.startswith('/edit_request/'):
+                    full_url = f"{wiki_url}{href}"
+                    text = a_tag.get_text(strip=True)
+                    edit_request_url.append(full_url)
+                    edit_request_text.append(text)
+            print(edit_request_url)
+            print(edit_request_text)
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: 최근 생성 또는 편집된 편집 요청 상세 주소: {edit_request_url}")
+            log.write(f"\n{datetime.now()}: 최근 생성 또는 편집된 편집 요청 간단 주소: {edit_request_text}")
+            for i, j in zip(edit_request_url, edit_request_text):
+                driver.get(i)
+                edit_request_document_link = driver.find_element(By.XPATH, '//*[@id="main_title"]/a')
+                edit_request_document = edit_request_document_link.text
+                #해당 편집 요청의 기준판 알아내기
+                version = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > div:nth-child(4)')
+                lastest_version = version.text  # 해당 문서의 최신 리비전
+                lastest_version = lastest_version[6:]
+                lastest_version = int(lastest_version)
+                #해당 편집 요청의 기준 판 RAW 불러오기
+                driver.get("%s/raw/%s?rev=%d" % (wiki_url, edit_request_document, lastest_version))
+                time.sleep(0.5)
+                lastest_doc = get_doc_text()
+
+                driver.get(i)
+                edit_request_diff_element = driver.find_element(By.CSS_SELECTOR, '#edit > table')
+                edit_request_diff = edit_request_diff_element.text
+
+                edit_request_user_text = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > h3 > a')
+                edit_request_user = edit_request_user_text.text
+
+                for k in vandalism:
+                    if k in edit_request_diff:
+                        if k not in lastest_doc :
+                            block_edit_request(edit_request_user, j)
+                            close_edit_request(i)
+                            break
+        except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+            print("[오류!] 최근 편집 요청을 검토할 수 없습니다.")
+            now = datetime.now()
+            log.write(f"\n{datetime.now()}: [오류!] 최근 토론의 열린 편집 요청 탭을 검토하던 도중 알 수 없는 오류가 발생했습니다.")
 
 now = datetime.now()
 log.write(f"\n{datetime.now()}: 코드의 마지막 줄이 성공적으로 실행되었습니다. 이 메시지는 주로 사용자 토론으로 인해 봇이 긴급 정지되는 경우 표시됩니다.")
