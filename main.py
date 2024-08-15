@@ -14,7 +14,7 @@ wiki_name = ""
 emergency_stop_document = ""
 # 반달성 문서를 휴지통화할  이름공간
 document_trash = "휴지통"
-# 자신의 api token
+# 자신의 api token (haneul-seed에서만 필요)
 api_token = ""
 # 사용할 엔진 (imitated seed, haneul seed)
 using_engine = "imitated seed"
