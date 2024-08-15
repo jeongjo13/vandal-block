@@ -341,11 +341,6 @@ login_success = False
 # 댓글 데이터를 저장할 리스트
 comments = []
 
-if using_engine == "haneul seed" :
-    haneulseed_continue = input("[경고!] 현재 haneul-seed 엔진에서 봇이 제대로 작동하지 않고 있으며, 치명적인 버그가 존재하므로 사용을 자제할 것이 매우 권장됩니다. 그래도 계속 진행하시겠습니까? (y/n): ")
-    if haneulseed_continue != 'y' :
-        exit(0)
-
 while login_success == False :
     try :
         # 크롬 드라이버에 URL 주소 넣고 실행
@@ -416,6 +411,13 @@ while True :
             # BeautifulSoup을 사용하여 페이지 소스를 파싱
             soup = bs(page_source, 'html.parser')
 
+            if using_engine == "haneul seed" :
+                element_to_remove = soup.select_one('body > div.Liberty > div.content-wrapper > div.liberty-sidebar > div')
+
+                # 요소가 존재하는지 확인 후 제거
+                if element_to_remove:
+                    element_to_remove.decompose()
+
             # 최근 변경된 문서 목록 추출
             links = soup.find_all('a', href=True)
 
@@ -473,6 +475,13 @@ while True :
 
             # BeautifulSoup을 사용하여 페이지 소스를 파싱
             soup = bs(page_source, 'html.parser')
+
+            if using_engine == "haneul seed" :
+                element_to_remove = soup.select_one('body > div.Liberty > div.content-wrapper > div.liberty-sidebar > div')
+
+                # 요소가 존재하는지 확인 후 제거
+                if element_to_remove:
+                    element_to_remove.decompose()
 
             # 최근 변경된 문서 목록 추출
             links = soup.find_all('a', href=True)
@@ -572,6 +581,13 @@ while True :
 
             # BeautifulSoup을 사용하여 페이지 소스를 파싱
             soup = bs(page_source, 'html.parser')
+
+            if using_engine == "haneul seed" :
+                element_to_remove = soup.select_one('body > div.Liberty > div.content-wrapper > div.liberty-sidebar > div')
+
+                # 요소가 존재하는지 확인 후 제거
+                if element_to_remove:
+                    element_to_remove.decompose()
 
             threads = []
             thread_url = []
