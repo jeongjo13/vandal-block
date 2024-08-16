@@ -18,6 +18,8 @@ document_trash = "휴지통"
 api_token = ""
 # 사용할 엔진 (imitated seed, haneul seed)
 using_engine = "imitated seed"
+# 토론 휴지통화 시 적용할 토론 주제
+trash_thread_name = "(자동으로 휴지통화된 스레드)"
 # 문서 제목 검토 활성화 여부
 document_name_lookup = True
 # 문서 내용 검토 활성화 여부
@@ -323,7 +325,7 @@ def close_thread(thread) : #토론 닫기 함수
         parent_element_topic = driver.find_element(By.ID, 'thread-topic-form')
         new_topic = parent_element_topic.find_element(By.NAME, 'topic')#토론 주제 변경 입력란
         new_topic.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
-        new_topic.send_keys('자동으로 휴지통화된 스레드') #새 토론 주제 (강제 조치와 같은 걸로 변경하고 싶으면 이걸 수정 바람)
+        new_topic.send_keys(trash_thread_name) #새 토론 주제 (강제 조치와 같은 걸로 변경하고 싶으면 이걸 수정 바람)
         update_thread_topic_button = parent_element_topic.find_element(By.ID, 'changeBtn')
         update_thread_topic_button.click() # 토론 주제 변경 클릭
         now = datetime.now()
