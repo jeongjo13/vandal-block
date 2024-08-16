@@ -18,6 +18,8 @@ document_trash = "휴지통"
 api_token = ""
 # 사용할 엔진 (imitated seed, haneul seed)
 using_engine = "imitated seed"
+# 토론 휴지통화 시 적용할 토론 주제
+trash_thread_name = "(자동으로 휴지통화된 스레드)"
 # 문서 제목 검토 활성화 여부
 document_name_lookup = True
 # 문서 내용 검토 활성화 여부
@@ -170,7 +172,7 @@ def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
         now = datetime.now()
-        log.write(f"\n{datetime.now()}: 로그인 버튼 클릭 완료")
+        log.write(f"\n{datetime.now()}: {blocking} 사용자 차단. 차단 사유: 토론 {thread} #{comment_number} 긴급차단")
         now = datetime.now()
         log.write(f"\n{datetime.now()}: {blocking} 사용자 차단. 차단 사유: 토론 {thread} #{comment_number} 긴급차단")
     else :
@@ -323,7 +325,7 @@ def close_thread(thread) : #토론 닫기 함수
         parent_element_topic = driver.find_element(By.ID, 'thread-topic-form')
         new_topic = parent_element_topic.find_element(By.NAME, 'topic')#토론 주제 변경 입력란
         new_topic.send_keys(Keys.CONTROL,'a', Keys.BACKSPACE)
-        new_topic.send_keys('자동으로 휴지통화된 스레드') #새 토론 주제 (강제 조치와 같은 걸로 변경하고 싶으면 이걸 수정 바람)
+        new_topic.send_keys(trash_thread_name) #새 토론 주제 (강제 조치와 같은 걸로 변경하고 싶으면 이걸 수정 바람)
         update_thread_topic_button = parent_element_topic.find_element(By.ID, 'changeBtn')
         update_thread_topic_button.click() # 토론 주제 변경 클릭
         now = datetime.now()
@@ -613,6 +615,41 @@ while True :
                         #block_thread(check_thread(j), check_thread_user(j), '1')
                         close_thread(j)
             if using_engine == "haneul seed" :
+                driver.get("%s/RecentDiscuss" % wiki_url)
+                time.sleep(0.4)
+
+                # 페이지 소스 가져오기
+                page_source = driver.page_source
+
+                # BeautifulSoup을 사용하여 페이지 소스를 파싱
+                soup = bs(page_source, 'html.parser')
+
+                if using_engine == "haneul seed":
+                    element_to_remove = soup.select_one(
+                        'body > div.Liberty > div.content-wrapper > div.liberty-sidebar > div')
+
+                    # 요소가 존재하는지 확인 후 제거
+                    if element_to_remove:
+                        element_to_remove.decompose()
+
+                threads = []
+                thread_url = []
+                thread_text = []
+
+                for a_tag in soup.find_all('a', href=True):
+                    href = a_tag['href']
+                    if href.startswith('/thread/'):
+                        full_url = f"{wiki_url}{href}"
+                        text = a_tag.get_text(strip=True)
+                        thread_url.append(full_url)
+                        thread_text.append(text)
+                print(thread_url)
+                print(thread_text)
+
+                now = datetime.now()
+                log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주소: {thread_url}")
+                log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주제: {thread_text}")
+
                 thread_get_cnt = 0
                 for i in thread_url :
                     thread_getting_url = check_thread(i)
