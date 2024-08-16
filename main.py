@@ -9,7 +9,7 @@ wiki_password = ''
 # 위키 주소
 wiki_url = ""
 # 위키 이름
-wiki_name = "하늘위키"
+wiki_name = ""
 # 긴급 정지 토론 발제 문서
 emergency_stop_document = ""
 # 반달성 문서를 휴지통화할  이름공간
