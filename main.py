@@ -170,7 +170,7 @@ def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단
         add_block.click()
         blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
         now = datetime.now()
-        log.write(f"\n{datetime.now()}: 로그인 버튼 클릭 완료")
+        log.write(f"\n{datetime.now()}: {blocking} 사용자 차단. 차단 사유: 토론 {thread} #{comment_number} 긴급차단")
         now = datetime.now()
         log.write(f"\n{datetime.now()}: {blocking} 사용자 차단. 차단 사유: 토론 {thread} #{comment_number} 긴급차단")
     else :
