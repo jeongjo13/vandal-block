@@ -9,7 +9,7 @@ wiki_password = ''
 # 위키 주소
 wiki_url = ""
 # 위키 이름
-wiki_name = ""
+wiki_name = "하늘위키"
 # 긴급 정지 토론 발제 문서
 emergency_stop_document = ""
 # 반달성 문서를 휴지통화할  이름공간
@@ -615,6 +615,41 @@ while True :
                         #block_thread(check_thread(j), check_thread_user(j), '1')
                         close_thread(j)
             if using_engine == "haneul seed" :
+                driver.get("%s/RecentDiscuss" % wiki_url)
+                time.sleep(0.4)
+
+                # 페이지 소스 가져오기
+                page_source = driver.page_source
+
+                # BeautifulSoup을 사용하여 페이지 소스를 파싱
+                soup = bs(page_source, 'html.parser')
+
+                if using_engine == "haneul seed":
+                    element_to_remove = soup.select_one(
+                        'body > div.Liberty > div.content-wrapper > div.liberty-sidebar > div')
+
+                    # 요소가 존재하는지 확인 후 제거
+                    if element_to_remove:
+                        element_to_remove.decompose()
+
+                threads = []
+                thread_url = []
+                thread_text = []
+
+                for a_tag in soup.find_all('a', href=True):
+                    href = a_tag['href']
+                    if href.startswith('/thread/'):
+                        full_url = f"{wiki_url}{href}"
+                        text = a_tag.get_text(strip=True)
+                        thread_url.append(full_url)
+                        thread_text.append(text)
+                print(thread_url)
+                print(thread_text)
+
+                now = datetime.now()
+                log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주소: {thread_url}")
+                log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주제: {thread_text}")
+
                 thread_get_cnt = 0
                 for i in thread_url :
                     thread_getting_url = check_thread(i)
