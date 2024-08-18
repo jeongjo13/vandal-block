@@ -46,10 +46,10 @@ now = datetime.now()
 
 log = open("log.txt", 'a')
 
-def hide_comment(tnum, number) :
-    driver.get(f"{wiki_url}/admin/thread/{tnum}/{number}/hide")
+def hide_comment(tnum, number) : # 반달성 토론 댓글 블라인드 함수
+    driver.get(f'{wiki_url}/admin/thread/{tnum}/{number}/hide')
 
-def thread_get(thread_get_url) :
+def thread_get(thread_get_url) : # 토론 api 읽어오기 (haneul-seed 전용)
     try :
         # API URL
         api_url = f"https://haneul.wiki/api/thread/{thread_get_url}"
@@ -180,7 +180,7 @@ def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단
         log.write(f"\n{datetime.now()}: {blocking} 사용자 차단 건너뜀. 이미 자동으로 차단되었거나 차단 제외 목록에 있는 사용자입니다. 차단하려던 사유는 다음과 같습니다: 토론 {thread} #{comment_number} 긴급차단")
 
 
-def block_edit_request(blocking, edit_request_url) :
+def block_edit_request(blocking, edit_request_url) : #반달성 편집 요청으로 인해 사용자를 차단하는 경우 이 함수 사용됨
     if blocking not in blocked :
         driver.get("%s/aclgroup?group=차단된 사용자" % wiki_url)
         option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
@@ -221,7 +221,7 @@ def block_memo(name) : #차단 사유에 문서명을 문서:~~~, 하늘위키:~
                                                 if not name.startswith("문서:") :
                                                     name = "문서:" + name #차단 사유의 문서명 앞에 문서:를 붙임
     return(name) #문서명 반환
-def close_edit_request(edit_request) :
+def close_edit_request(edit_request) : #반달성 편집 요청 닫기 함수
     try :
         driver.get(edit_request)
         close_button = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > div.card > div > span > button')
@@ -306,7 +306,7 @@ def check_thread_user(thread) :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 반달성 주제를 가진 토론 {thread}의 발제자를 식별할 수 없습니다. 일반적으로 이 오류는 토론 로딩이 아직 완료되지 않았거나 토론에 많은 텍스트가 도배된 경우에 표시됩니다.")
 
-def close_thread(thread) : #토론 닫기 함수
+def close_thread(thread) : # 반달성 토론 닫기 함수
     try :
         driver.get(thread)
         close_select = driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/div[2]/div[3]/form[1]/select')
