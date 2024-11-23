@@ -1,12 +1,12 @@
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = []# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 # 감지할 반달성 키워드
-vandalism = ["OUT_", "out_", "지랄", "새꺄", "sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby", "fuck", "나 슬러가드"]
+vandalism = ["OUT_", "out_", "사퇴하세요", "지랄", "새꺄", "sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby", "fuck", "나 슬러가드"]
 # 자신의 위키 로그인 아이디
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
 wiki_password = ''
-# 위키 주소
+# 위키 주소 (http://나 https://도 포함하며, 도메인 끝에 /는 붙이지 않음)
 wiki_url = ""
 # 위키 이름
 wiki_name = ""
@@ -52,7 +52,7 @@ def hide_comment(tnum, number) : # 반달성 토론 댓글 블라인드 함수
 def thread_get(thread_get_url) : # 토론 api 읽어오기 (haneul-seed 전용)
     try :
         # API URL
-        api_url = f"https://haneul.wiki/api/thread/{thread_get_url}"
+        api_url = f"{wiki_url}/api/thread/{thread_get_url}"
 
         # 요청 헤더 설정
         headers = {
@@ -291,7 +291,7 @@ def trashname() : #휴지통화할 때 휴지통 문서명 반환해주는 함�
     return (a) #반환
 
 def check_thread(thread) : #토론 주소에서 토론 ~~~의 부분만 반환
-    thread = thread[27:] #https://위키주소/thread/부분은 자르고 나머지 부분만 남김 (다른 위키에서 사용 시 수정 필요)
+    thread = thread[30:] #https://groundwiki.xyz/thread/부분은 자르고 나머지 부분만 남김 (다른 위키에서 사용 시 수정 필요)
     return(thread) #토론 주소 반환
 
 def check_thread_user(thread) :
@@ -608,12 +608,13 @@ while True :
             now = datetime.now()
             log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주소: {thread_url}")
             log.write(f"\n{datetime.now()}: 최근 댓글이 작성된 토론 주제: {thread_text}")
-
+            
             for i,j in zip(thread_text,thread_url) :
                 for k in vandalism :
                     if k in i :
                         #block_thread(check_thread(j), check_thread_user(j), '1')
                         close_thread(j)
+            
             if using_engine == "haneul seed" :
                 driver.get("%s/RecentDiscuss" % wiki_url)
                 time.sleep(0.4)
@@ -663,7 +664,7 @@ while True :
                     thread_get_cnt += 1
                     if thread_get_cnt >= 10 :
                         break
-
+                
         except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
             print("[오류!] 최근 토론을 검토할 수 없습니다.")
             now = datetime.now()
