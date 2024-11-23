@@ -655,12 +655,12 @@ while True :
                 for i in thread_url :
                     thread_getting_url = check_thread(i)
                     thread_comments = thread_get(thread_getting_url)
-                    for j,l in zip(thread_comments['comments'],thread_comments['tnum']) :
+                    tnum = thread_comments['tnum']
+                    for j in thread_comments['comments']:
                         for k in vandalism :
                             if k in j['content'] :
-                                print(j['content'])
                                 block_thread(thread_getting_url, j['name'], j['id'])
-                                hide_comment(l, j['id'])
+                                hide_comment(tnum, j['id'])
                     thread_get_cnt += 1
                     if thread_get_cnt >= 10 :
                         break
