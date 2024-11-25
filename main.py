@@ -1,7 +1,7 @@
 # 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 blocked = []# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
 # 감지할 반달성 키워드
-vandalism = ["OUT_", "out_", "사퇴하세요", "지랄", "새꺄", "sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby", "fuck", "나 슬러가드"]
+vandalism = ["OUT_", "out_", "는 사퇴하세요", "은 사퇴하세요", "지랄", "새꺄", "sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby", "fuck", "나 슬러가드"]
 # 자신의 위키 로그인 아이디
 wiki_username = ''
 # 자신의 위키 로그인 비밀번호
@@ -12,6 +12,8 @@ wiki_url = ""
 wiki_name = ""
 # 긴급 정지 토론 발제 문서
 emergency_stop_document = ""
+# 일시 정지 토론 발제 문서
+pause_document = ""
 # 반달성 문서를 휴지통화할  이름공간
 document_trash = "휴지통"
 # 자신의 api token (haneul-seed에서만 필요)
@@ -139,6 +141,28 @@ def emergency_stop() : #사용자 토론 긴급 정지 여부 확인
         print("[오류!] 사용자 토론 긴급 정지 여부를 검토할 수 없습니다.")
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지 여부 확인 실패")
+
+def pause_bot() : #사용자 토론 일시 정지 여부 확인
+    try :
+        while True : 
+            driver.get("%s/discuss/%s" % (wiki_url, pause_document))
+            try:
+                time.sleep(1)
+                element = driver.find_element(By.XPATH, '//*[@id="1"]')
+                print("[알림] 봇을 일시 정지합니다.")
+                now = datetime.now()
+                log.write(f"\n{datetime.now()}: 일시 정지 토론 발제용 문서 \'{emergency_stop_document}\'에 토론이 발제되어 봇을 일시 정지합니다.")
+                time.sleep(10)    
+            except NoSuchElementException:
+                print("[알림] 봇을 일시중지하지 않고 계속 가동합니다.")
+                now = datetime.now()
+                log.write(f"\n{datetime.now()}: 봇을 일시중지하지 않고 계속 가동합니다.")
+                break
+    except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+        print("[오류!] 사용자 토론 일시 정지 여부를 검토할 수 없습니다.")
+        now = datetime.now()
+        log.write(f"\n{datetime.now()}: 사용자 토론 일시 정지 여부 확인 실패")
+
 def block(document_, blocking, rev) : #문서 편집으로 인한 차단 시 차단하는 함수
     if blocking not in blocked :
         driver.get("%s/aclgroup?group=차단된 사용자" % wiki_url)
@@ -465,6 +489,7 @@ while True :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지")
         break
+    pause_bot()
     # 문서 변경사항 검토
     if document_raw_lookup == True :
         # RecentChanges 페이지로 이동
@@ -572,6 +597,7 @@ while True :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 긴급 정지")
         break
+    pause_bot()
     if thread_lookup == True :
         #최근 토론에서 반달성 제목을 가진 토론 추출 및 차단
         try :
