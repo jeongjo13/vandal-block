@@ -152,6 +152,7 @@ def pause_bot() : #사용자 토론 일시 정지 여부 확인
                 print("[알림] 봇을 일시 정지합니다.")
                 now = datetime.now()
                 log.write(f"\n{datetime.now()}: 일시 정지 토론 발제용 문서 \'{emergency_stop_document}\'에 토론이 발제되어 봇을 일시 정지합니다.")
+                time.sleep(10)    
             except NoSuchElementException:
                 print("[알림] 봇을 다시 시작합니다.")
                 now = datetime.now()
