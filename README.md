@@ -16,6 +16,8 @@ imitated seed 엔진 및 imitated seed를 개조한 엔진(단, 일부 엔진만
 * 반달성 주제를 가진 토론이 있으면 발제자 차단 및 토론 휴지통화
 
 # 필요한 권한
+필요한 권한은 다음과 같습니다: update_thread 3종류, admin, aclgroup, hide_thread_comment, api_access, 읽기/편집/이동/삭제/토론 댓글 권한
+
 어차피 예외 처리가 되어 있어 권한이 부족하면 해당 작업은 건너뛰기 때문에 권한 부족으로 오류가 발생할 일은 드뭅니다. 다만 아직까지는 haneul-seed에서 구동 시 api_access가 필수적으로 필요합니다.
 
 # 기본 사용 방법
