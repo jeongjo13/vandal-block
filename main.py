@@ -44,6 +44,10 @@ import requests
 import re
 import json
 
+# 이 변수는 수정하지 마세요
+ipv4_pattern = r"^(?:\d{1,3}\.){3}\d{1,3}$"
+ipv6_pattern = r"^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))$"
+
 now = datetime.now()
 
 log = open("log.txt", 'a')
@@ -163,38 +167,52 @@ def pause_bot() : #사용자 토론 일시 정지 여부 확인
         now = datetime.now()
         log.write(f"\n{datetime.now()}: 사용자 토론 일시 정지 여부 확인 실패")
 
-def block(document_, blocking, rev) : #문서 편집으로 인한 차단 시 차단하는 함수
+def block(document_, blocking, rev) : # 문서 편집으로 인한 차단 시 차단하는 함수
     if blocking not in blocked :
         driver.get("%s/aclgroup?group=차단된 사용자" % wiki_url)
-        option1 = driver.find_element(By.ID,'modeSelect') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
+        option1 = driver.find_element(By.ID,'modeSelect') # ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown1 = Select(option1)
-        dropdown1.select_by_value("username")
-        option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
+        if re.match(ipv4_pattern, blocking):
+            parts = a.split('.')
+            if all(0 <= int(part) <= 255 for part in parts):
+                dropdown1.select_by_value("ip")
+        elif re.match(ipv6_pattern, blocking):
+            dropdown1.select_by_value("ip")
+        else : 
+            dropdown1.select_by_value("username")
+        option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') # ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
-        option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
+        option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') # ACLGroup 창의 메모 입력란
         option3.send_keys("%s r%d 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (block_memo(document_), rev, wiki_name, emergency_stop_document))
         time.sleep(0.05)
         add_block = driver.find_element(By.CSS_SELECTOR, 'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button') #ACLGroup 창의 추가 버튼
         add_block.click()
-        blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
+        blocked.append(blocking) # 다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
         now = datetime.now()
         log.write(f"\n{datetime.now()}: {blocking} 사용자 차단. 차단 사유: {block_memo(document_)} r{rev} 긴급차단")
     else :
         now = datetime.now()
         log.write(f"\n{datetime.now()}: {blocking} 사용자 차단 건너뜀. 이미 자동으로 차단되었거나 차단 제외 목록에 있는 사용자입니다. 차단하려던 사유는 다음과 같습니다: {block_memo(document_)} r{rev} 긴급차단")
-def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단 시 차단하는 함수
+def block_thread(thread, blocking, comment_number) : # 토론으로 인한 차단 시 차단하는 함수
     if blocking not in blocked :
         driver.get("%s/aclgroup?group=차단된 사용자" % wiki_url)
-        option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
+        option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') # ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown1 = Select(option1)
-        dropdown1.select_by_value("username")
-        option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
+        if re.match(ipv4_pattern, blocking):
+            parts = a.split('.')
+            if all(0 <= int(part) <= 255 for part in parts):
+                dropdown1.select_by_value("ip")
+        elif re.match(ipv6_pattern, blocking):
+            dropdown1.select_by_value("ip")
+        else : 
+            dropdown1.select_by_value("username")
+        option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') # ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
-        option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
+        option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') # ACLGroup 창의 메모 입력란
         option3.send_keys("토론 %s #%s 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (thread, comment_number, wiki_name, emergency_stop_document))
         add_block = driver.find_element(By.CSS_SELECTOR,'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button')  # ACLGroup 창의 추가 버튼
         add_block.click()
-        blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
+        blocked.append(blocking) # 다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
         now = datetime.now()
         log.write(f"\n{datetime.now()}: {blocking} 사용자 차단. 차단 사유: 토론 {thread} #{comment_number} 긴급차단")
         now = datetime.now()
@@ -204,19 +222,26 @@ def block_thread(thread, blocking, comment_number) : #토론으로 인한 차단
         log.write(f"\n{datetime.now()}: {blocking} 사용자 차단 건너뜀. 이미 자동으로 차단되었거나 차단 제외 목록에 있는 사용자입니다. 차단하려던 사유는 다음과 같습니다: 토론 {thread} #{comment_number} 긴급차단")
 
 
-def block_edit_request(blocking, edit_request_url) : #반달성 편집 요청으로 인해 사용자를 차단하는 경우 이 함수 사용됨
+def block_edit_request(blocking, edit_request_url) : # 반달성 편집 요청으로 인해 사용자를 차단하는 경우 이 함수 사용됨
     if blocking not in blocked :
         driver.get("%s/aclgroup?group=차단된 사용자" % wiki_url)
-        option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') #ACLGroup 창의 아이피, 사용자 이름 여부 선택란
+        option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') # ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown1 = Select(option1)
-        dropdown1.select_by_value("username")
-        option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') #ACLGroup 창의 사용자 이름 입력란
+        if re.match(ipv4_pattern, blocking):
+            parts = a.split('.')
+            if all(0 <= int(part) <= 255 for part in parts):
+                dropdown1.select_by_value("ip")
+        elif re.match(ipv6_pattern, blocking):
+            dropdown1.select_by_value("ip")
+        else : 
+            dropdown1.select_by_value("username")
+        option2 = driver.find_element(By.XPATH,'//*[@id="usernameInput"]') # ACLGroup 창의 사용자 이름 입력란
         option2.send_keys(blocking)
-        option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') #ACLGroup 창의 메모 입력란
+        option3 = driver.find_element(By.XPATH,'//*[@id="noteInput"]') # ACLGroup 창의 메모 입력란
         option3.send_keys("%s 긴급차단 | 자동 차단 (잘못된 경우 \'%s:차단 소명 게시판\'에 토론 발제 바랍니다. 오작동 시 \'%s\'에 토론 발제 바랍니다.)" % (edit_request_url, wiki_name, emergency_stop_document))
         add_block = driver.find_element(By.CSS_SELECTOR,'body > div.Liberty > div.content-wrapper > div.container-fluid.liberty-content > div.liberty-content-main.wiki-article > form.settings-section > div.btns > button')  # ACLGroup 창의 추가 버튼
         add_block.click()
-        blocked.append(blocking) #다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
+        blocked.append(blocking) # 다른 사용자가 봇 오작동으로 보고 차단 해제했다면 다시 차단하는 것을 방지하기 위해 차단 제외 목록에 추가
         now = datetime.now()
         log.write(f"\n{datetime.now()}: {blocking} 사용자 차단. 차단 사유: {edit_request_url} 긴급차단")
     else :
