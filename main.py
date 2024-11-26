@@ -22,6 +22,8 @@ api_token = ""
 using_engine = "haneul seed"
 # 토론 휴지통화 시 적용할 토론 주제
 trash_thread_name = "(자동으로 휴지통화된 스레드)"
+# 반달 감지 시 해당 사용자를 추가할 ACL 그룹의 이름
+aclgroup_name = "차단된 사용자"
 # 문서 제목 검토 활성화 여부
 document_name_lookup = True
 # 문서 내용 검토 활성화 여부
@@ -169,7 +171,7 @@ def pause_bot() : #사용자 토론 일시 정지 여부 확인
 
 def block(document_, blocking, rev) : # 문서 편집으로 인한 차단 시 차단하는 함수
     if blocking not in blocked :
-        driver.get("%s/aclgroup?group=차단된 사용자" % wiki_url)
+        driver.get("%s/aclgroup?group=%s" % (wiki_url, aclgroup_name))
         option1 = driver.find_element(By.ID,'modeSelect') # ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown1 = Select(option1)
         if re.match(ipv4_pattern, blocking):
@@ -195,7 +197,7 @@ def block(document_, blocking, rev) : # 문서 편집으로 인한 차단 시 �
         log.write(f"\n{datetime.now()}: {blocking} 사용자 차단 건너뜀. 이미 자동으로 차단되었거나 차단 제외 목록에 있는 사용자입니다. 차단하려던 사유는 다음과 같습니다: {block_memo(document_)} r{rev} 긴급차단")
 def block_thread(thread, blocking, comment_number) : # 토론으로 인한 차단 시 차단하는 함수
     if blocking not in blocked :
-        driver.get("%s/aclgroup?group=차단된 사용자" % wiki_url)
+        driver.get("%s/aclgroup?group=%s" % (wiki_url, aclgroup_name))
         option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') # ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown1 = Select(option1)
         if re.match(ipv4_pattern, blocking):
@@ -224,7 +226,7 @@ def block_thread(thread, blocking, comment_number) : # 토론으로 인한 차�
 
 def block_edit_request(blocking, edit_request_url) : # 반달성 편집 요청으로 인해 사용자를 차단하는 경우 이 함수 사용됨
     if blocking not in blocked :
-        driver.get("%s/aclgroup?group=차단된 사용자" % wiki_url)
+        driver.get("%s/aclgroup?group=%s" % (wiki_url, aclgroup_name))
         option1 = driver.find_element(By.XPATH,'//*[@id="modeSelect"]') # ACLGroup 창의 아이피, 사용자 이름 여부 선택란
         dropdown1 = Select(option1)
         if re.match(ipv4_pattern, blocking):
