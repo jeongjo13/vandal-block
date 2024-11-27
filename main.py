@@ -1,5 +1,7 @@
-# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
-blocked = []# 차단하지 않을 사용자(또는 이미 차단한 사용자(중복 차단 방지)) 리스트
+# 차단하지 않을 사용자 리스트
+whitelist = []
+# 이미 차단한 사용자 리스트
+blocked = whitelist
 # 감지할 반달성 키워드
 vandalism = ["OUT_", "out_", "는 사퇴하세요", "은 사퇴하세요", "지랄", "새꺄", "sexwith", "SEX", "sex", "Sex", "DogBaby", "SEXWITH", "SexWith", "시발아", "개새끼야", "씨발놈같은", "씨발아", "씨발놈아", "개병신", "좆같은", "은 뒤져라", "는 뒤져라", "정좆", "jeongjot", "Fuck_", "사퇴 기원", "sibal_", "No_", "Nono_", "NO_", "FUCK_", "satoehaseyo", "must resign", "해웃돈을", "혁명본부 만세", "wikiRevolution", "wikirevolution", "사퇴를 촉구합니다", "#redirect 개새끼", "#redirect 좆병신", "#redirect 좆", "#redirect 병신", "#넘겨주기 병신", "#넘겨주기 개새끼", "#넘겨주기 좆병신", "#넘겨주기 좆", "dogbaby", "fuck", "나 슬러가드"]
 # 자신의 위키 로그인 아이디
@@ -506,8 +508,9 @@ while True :
 
             for i,j in zip(edited_document,edited_user) :
                 if any(v in i for v in vandalism):
-                    block(i, j, 1)
-                    trash(i)
+                    if j not in whitelist : 
+                        block(i, j, 1)
+                        trash(i)
         except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
             print("[오류!] 최근 변경의 새 문서 탭을 검토할 수 없습니다.")
             now = datetime.now()
@@ -587,28 +590,32 @@ while True :
                         for k in vandalism :
                             if k in lastest_doc :
                                 if k not in prev_doc :
-                                    block(i, j, lastest_version)
-                                    revert(i, lastest_version)
-                                    break
+                                    if j not in whitelist : 
+                                        block(i, j, lastest_version)
+                                        revert(i, lastest_version)
+                                        break
                         cnt1 = lastest_doc.count("[include(")
                         cnt2 = prev_doc.count("[include(")
                         if cnt1 - cnt2 >= 500 :
-                            block(i, j, lastest_version)
-                            revert(i, lastest_version)
-                            break
+                            if j not in whitelist : 
+                                block(i, j, lastest_version)
+                                revert(i, lastest_version)
+                                break
                     else :
                         driver.get("%s/raw/%s?rev=%d" % (wiki_url, i, lastest_version))
                         time.sleep(0.5)
                         lastest_doc = get_doc_text()
                         for k in vandalism :
                             if k in lastest_doc :
-                                block(i, j, lastest_version)
-                                trash(i)
-                                break
+                                if j not in whitelist : 
+                                    block(i, j, lastest_version)
+                                    trash(i)
+                                    break
                         cnt = lastest_doc.count("[include(")
                         if cnt >= 500 :
-                            block(i, j, lastest_version)
-                            trash(i)
+                            if j not in whitelist : 
+                                block(i, j, lastest_version)
+                                trash(i)
                 except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
                     print("error")
                 num += 1;
@@ -665,8 +672,11 @@ while True :
             for i,j in zip(thread_text,thread_url) :
                 for k in vandalism :
                     if k in i :
-                        #block_thread(check_thread(j), check_thread_user(j), '1')
-                        close_thread(j)
+                        thread_link = check_thread(j)
+                        thread_user = check_thread_user(j)
+                        if thread_user not in whitelist : 
+                            block_thread(check_thread(j), check_thread_user(j), '1')
+                            close_thread(j)
             
             if using_engine == "haneul seed" :
                 driver.get("%s/RecentDiscuss" % wiki_url)
@@ -712,8 +722,9 @@ while True :
                     for j in thread_comments['comments']:
                         for k in vandalism :
                             if k in j['content'] :
-                                block_thread(thread_getting_url, j['name'], j['id'])
-                                hide_comment(tnum, j['id'])
+                                if j['name'] not in whitelist : 
+                                    block_thread(thread_getting_url, j['name'], j['id'])
+                                    hide_comment(tnum, j['id'])
                     thread_get_cnt += 1
                     if thread_get_cnt >= 10 :
                         break
@@ -773,9 +784,10 @@ while True :
                 for k in vandalism:
                     if k in edit_request_diff:
                         if k not in lastest_doc :
-                            block_edit_request(edit_request_user, j)
-                            close_edit_request(i)
-                            break
+                            if edit_request_user not in whitelist : 
+                                block_edit_request(edit_request_user, j)
+                                close_edit_request(i)
+                                break
         except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
             print("[오류!] 최근 편집 요청을 검토할 수 없습니다.")
             now = datetime.now()
